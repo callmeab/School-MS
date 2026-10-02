@@ -1,0 +1,552 @@
+<div class="exam-detail-page">
+  <!-- ========================================================================= -->
+  <!-- SCREEN DISPLAY VIEW (Hidden during Print) -->
+  <!-- ========================================================================= -->
+  <div class="screen-view no-print">
+    <!-- Back Navigation Link -->
+    <div class="back-nav">
+      <a routerLink="/exams" class="back-link">
+        <span class="back-arrow">&larr;</span> Back to Examinations
+      </a>
+    </div>
+
+    @if (loading()) {
+      <app-loading-spinner message="Loading examination schedule..."></app-loading-spinner>
+    } @else if (!exam()) {
+      <app-empty-state
+        icon="exams"
+        title="Exam Not Found"
+        message="The requested examination schedule could not be loaded."
+      ></app-empty-state>
+    } @else {
+      <!-- Exam Header Summary Card -->
+      <div class="exam-header-card">
+        <div class="exam-header-main">
+          <div class="title-with-badge">
+            <h1 class="exam-title">{{ exam()!.title }}</h1>
+            <span
+              class="status-badge"
+              [ngClass]="'badge-' + exam()!.status"
+            >
+              {{ exam()!.status }}
+            </span>
+          </div>
+
+          <div class="exam-meta-items">
+            <div class="meta-item">
+              <span class="meta-label">Class:</span>
+              <strong class="meta-val">
+                {{ exam()!.class_name || '—' }} - Section {{ exam()!.class_section || '—' }} ({{ exam()!.class_academic_year || '' }})
+              </strong>
+            </div>
+            <div class="meta-item">
+              <span class="meta-label">Schedule Duration:</span>
+              <strong class="meta-val">
+                {{ formatDate(exam()!.start_date) }} – {{ formatDate(exam()!.end_date) }}
+              </strong>
+            </div>
+            <div class="meta-item">
+              <span class="meta-label">Total Papers:</span>
+              <span class="papers-pill">{{ papers().length }} Scheduled</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Action Buttons (Print & Admin Operations) -->
+        <div class="exam-header-actions">
+          <button
+            type="button"
+            class="btn btn-secondary btn-print"
+            (click)="printDateSheet()"
+            title="Print clean date sheet"
+          >
+            <span class="print-icon" aria-hidden="true">&#128438;</span>
+            <span>Print Date Sheet</span>
+          </button>
+
+          @if (authService.isAdmin()) {
+            <button
+              type="button"
+              class="btn btn-secondary"
+              (click)="openEditExamDialog()"
+              title="Edit exam details or dates"
+            >
+              Edit Exam
+            </button>
+            <button
+              type="button"
+              class="btn btn-primary"
+              (click)="openAddPaperDialog()"
+            >
+              <span class="btn-icon-plus">+</span>
+              <span>Add Paper</span>
+            </button>
+          }
+        </div>
+      </div>
+
+      <!-- Warning if any paper is outside current exam start_date..end_date -->
+      @if (papersOutsideDateRange().length > 0) {
+        <div class="notice-banner banner-warning" role="alert">
+          <span class="banner-icon">&#9888;</span>
+          <div>
+            <strong>Date Range Conflict:</strong>
+            The following {{ papersOutsideDateRange().length }} paper(s) are scheduled outside the exam duration ({{ exam()!.start_date }} to {{ exam()!.end_date }}):
+            <ul class="conflict-paper-list">
+              @for (p of papersOutsideDateRange(); track p.id) {
+                <li>
+                  {{ p.subject_name }} on {{ formatDate(p.paper_date) }}
+                  @if (authService.isAdmin()) {
+                    <button type="button" class="btn-link" (click)="openEditPaperDialog(p)">Fix Date</button>
+                  }
+                </li>
+              }
+            </ul>
+          </div>
+        </div>
+      }
+
+      <!-- Papers Schedule Content -->
+      @if (papers().length === 0) {
+        <app-empty-state
+          icon="subjects"
+          title="No Papers Scheduled"
+          [message]="authService.isAdmin() ? 'Click Add Paper above to schedule subjects for this examination.' : 'No papers have been scheduled for this examination yet.'"
+        ></app-empty-state>
+      } @else {
+        <!-- Papers Table (Desktop) -->
+        <div class="table-container desktop-view">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th class="col-date">Date</th>
+                <th class="col-time">Time</th>
+                <th class="col-subject">Subject</th>
+                <th class="col-room">Room</th>
+                <th class="col-marks">Total Marks</th>
+                @if (authService.isAdmin()) {
+                  <th class="text-right">Actions</th>
+                }
+              </tr>
+            </thead>
+            <tbody>
+              @for (p of papers(); track p.id) {
+                <tr>
+                  <td class="col-date">
+                    <strong class="paper-date-text">{{ formatDate(p.paper_date) }}</strong>
+                  </td>
+                  <td class="col-time">
+                    <span class="time-badge">{{ formatTimeRange(p.start_time, p.end_time) }}</span>
+                  </td>
+                  <td class="col-subject">
+                    <div class="subject-info">
+                      <strong class="subject-name">{{ p.subject_name }}</strong>
+                      @if (p.subject_code) {
+                        <span class="subject-code-tag">{{ p.subject_code }}</span>
+                      }
+                    </div>
+                  </td>
+                  <td class="col-room">
+                    <span class="room-text">{{ p.room || '—' }}</span>
+                  </td>
+                  <td class="col-marks">
+                    <span class="marks-pill">{{ p.total_marks }} Marks</span>
+                  </td>
+                  @if (authService.isAdmin()) {
+                    <td class="text-right">
+                      <div class="actions-group">
+                        <button
+                          type="button"
+                          class="btn-icon"
+                          (click)="openEditPaperDialog(p)"
+                          title="Edit scheduled paper"
+                        >
+                          Edit
+                        </button>
+                        <button
+                          type="button"
+                          class="btn-icon text-danger"
+                          (click)="confirmDeletePaper(p)"
+                          title="Delete paper"
+                        >
+                          Delete
+                        </button>
+                      </div>
+                    </td>
+                  }
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Papers Cards (Mobile) -->
+        <div class="mobile-view paper-card-list">
+          @for (p of papers(); track p.id) {
+            <div class="paper-card">
+              <div class="paper-card-header">
+                <div class="subject-info">
+                  <strong class="subject-name">{{ p.subject_name }}</strong>
+                  @if (p.subject_code) {
+                    <span class="subject-code-tag">{{ p.subject_code }}</span>
+                  }
+                </div>
+                <span class="marks-pill">{{ p.total_marks }} Marks</span>
+              </div>
+
+              <div class="paper-card-details">
+                <div class="detail-row">
+                  <span class="detail-label">Date:</span>
+                  <span class="detail-val">{{ formatDate(p.paper_date) }}</span>
+                </div>
+                <div class="detail-row">
+                  <span class="detail-label">Time:</span>
+                  <span class="detail-val">{{ formatTimeRange(p.start_time, p.end_time) }}</span>
+                </div>
+                <div class="detail-row">
+                  <span class="detail-label">Room:</span>
+                  <span class="detail-val">{{ p.room || 'Not Assigned' }}</span>
+                </div>
+              </div>
+
+              @if (authService.isAdmin()) {
+                <div class="paper-card-actions">
+                  <button
+                    type="button"
+                    class="btn btn-secondary btn-sm flex-1"
+                    (click)="openEditPaperDialog(p)"
+                  >
+                    Edit
+                  </button>
+                  <button
+                    type="button"
+                    class="btn-icon text-danger"
+                    (click)="confirmDeletePaper(p)"
+                  >
+                    Delete
+                  </button>
+                </div>
+              }
+            </div>
+          }
+        </div>
+      }
+    }
+  </div>
+
+  <!-- ========================================================================= -->
+  <!-- PRINT-ONLY VIEW (Only shown when printing date sheet via @media print)    -->
+  <!-- ========================================================================= -->
+  @if (exam()) {
+    <div class="print-only printable-datesheet">
+      <div class="datesheet-school-header">
+        <h1>{{ schoolName }}</h1>
+        <h2>OFFICIAL EXAMINATION DATE SHEET</h2>
+        <p>{{ exam()!.title }}</p>
+      </div>
+
+      <div class="datesheet-meta-grid">
+        <div>
+          <span><strong>Class:</strong> {{ exam()!.class_name }} - Section {{ exam()!.class_section }} ({{ exam()!.class_academic_year }})</span>
+        </div>
+        <div>
+          <span><strong>Exam Period:</strong> {{ formatDate(exam()!.start_date) }} – {{ formatDate(exam()!.end_date) }}</span>
+        </div>
+      </div>
+
+      <table class="datesheet-table">
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>Timing</th>
+            <th>Subject</th>
+            <th>Code</th>
+            <th>Room</th>
+            <th>Marks</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (p of papers(); track p.id) {
+            <tr>
+              <td>{{ formatDate(p.paper_date) }}</td>
+              <td>{{ formatTimeRange(p.start_time, p.end_time) }}</td>
+              <td><strong>{{ p.subject_name }}</strong></td>
+              <td>{{ p.subject_code || '—' }}</td>
+              <td>{{ p.room || 'General Hall' }}</td>
+              <td>{{ p.total_marks }}</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+
+      <div class="datesheet-footer">
+        <div>
+          <span>Date Issued: {{ formatDate(exam()!.start_date) }}</span>
+        </div>
+        <div class="sign-line">
+          <span>Controller of Examinations</span>
+        </div>
+        <div class="sign-line">
+          <span>Principal / Headmaster</span>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- ========================================================================= -->
+  <!-- DIALOGS (Admin Only)                                                      -->
+  <!-- ========================================================================= -->
+
+  <!-- Add / Edit Paper Dialog -->
+  @if (authService.isAdmin() && exam()) {
+    <app-dialog
+      [isOpen]="showPaperDialog()"
+      [title]="editingPaper() ? 'Edit Exam Paper' : 'Schedule Exam Paper'"
+      (closed)="closePaperDialog()"
+    >
+      <form (ngSubmit)="savePaper()" class="dialog-form" novalidate>
+        <!-- Form Error Banner -->
+        @if (formPaperError()) {
+          <div class="notice-banner banner-warning" role="alert">
+            <span>{{ formPaperError() }}</span>
+          </div>
+        }
+
+        <!-- Overlapping Time Warning Banner (Warn, not block) -->
+        @if (paperTimeOverlapWarning()) {
+          <div class="notice-banner banner-warning" role="alert">
+            <span class="banner-icon">&#9888;</span>
+            <span>{{ paperTimeOverlapWarning() }}</span>
+          </div>
+        }
+
+        <!-- Subject Selection -->
+        <div class="form-group">
+          <label for="paperSubject" class="form-label">Subject *</label>
+          <select
+            id="paperSubject"
+            class="form-select"
+            [ngModel]="formSubjectId()"
+            (ngModelChange)="formSubjectId.set($event)"
+            name="paperSubject"
+            required
+          >
+            <option value="" disabled>-- Select Subject --</option>
+            @for (s of availableSubjects(); track s.id) {
+              <option [value]="s.id">
+                {{ s.name }} ({{ s.code }})
+              </option>
+            }
+          </select>
+          @if (availableSubjects().length === 0 && !editingPaper()) {
+            <small class="text-muted">All assigned subjects for this class are already scheduled.</small>
+          }
+        </div>
+
+        <!-- Paper Date (Restricted to exam start..end) -->
+        <div class="form-group">
+          <label for="paperDate" class="form-label">
+            Paper Date *
+            <span class="date-bounds-hint">({{ formatDate(exam()!.start_date) }} to {{ formatDate(exam()!.end_date) }})</span>
+          </label>
+          <input
+            id="paperDate"
+            type="date"
+            class="form-control"
+            [ngModel]="formPaperDate()"
+            (ngModelChange)="formPaperDate.set($event)"
+            [min]="exam()!.start_date"
+            [max]="exam()!.end_date"
+            name="paperDate"
+            required
+          />
+        </div>
+
+        <!-- Start Time and End Time -->
+        <div class="form-row-2">
+          <div class="form-group">
+            <label for="paperStartTime" class="form-label">Start Time *</label>
+            <input
+              id="paperStartTime"
+              type="time"
+              class="form-control"
+              [ngModel]="formStartTime()"
+              (ngModelChange)="formStartTime.set($event)"
+              name="paperStartTime"
+              required
+            />
+          </div>
+
+          <div class="form-group">
+            <label for="paperEndTime" class="form-label">End Time *</label>
+            <input
+              id="paperEndTime"
+              type="time"
+              class="form-control"
+              [ngModel]="formEndTime()"
+              (ngModelChange)="formEndTime.set($event)"
+              name="paperEndTime"
+              required
+            />
+          </div>
+        </div>
+
+        <!-- Room and Total Marks -->
+        <div class="form-row-2">
+          <div class="form-group">
+            <label for="paperRoom" class="form-label">Room / Hall (Optional)</label>
+            <input
+              id="paperRoom"
+              type="text"
+              class="form-control"
+              placeholder="e.g. Hall A, Room 102"
+              [ngModel]="formRoom()"
+              (ngModelChange)="formRoom.set($event)"
+              name="paperRoom"
+            />
+          </div>
+
+          <div class="form-group">
+            <label for="paperMarks" class="form-label">Total Marks *</label>
+            <input
+              id="paperMarks"
+              type="number"
+              class="form-control"
+              min="1"
+              max="1000"
+              [ngModel]="formTotalMarks()"
+              (ngModelChange)="formTotalMarks.set($event)"
+              name="paperMarks"
+              required
+            />
+          </div>
+        </div>
+
+        <!-- Dialog Buttons -->
+        <div class="dialog-action-buttons">
+          <button
+            type="button"
+            class="btn btn-secondary"
+            (click)="closePaperDialog()"
+            [disabled]="savingPaper()"
+          >
+            Cancel
+          </button>
+          <button
+            type="submit"
+            class="btn btn-primary"
+            [disabled]="savingPaper() || (availableSubjects().length === 0 && !editingPaper())"
+          >
+            @if (savingPaper()) {
+              <span class="btn-spinner"></span>
+              <span>Saving Paper...</span>
+            } @else {
+              <span>{{ editingPaper() ? 'Update Paper' : 'Add to Schedule' }}</span>
+            }
+          </button>
+        </div>
+      </form>
+    </app-dialog>
+
+    <!-- Edit Exam Dialog (From Detail View) -->
+    <app-dialog
+      [isOpen]="showEditExamDialog()"
+      title="Edit Examination Details"
+      (closed)="closeEditExamDialog()"
+    >
+      <form (ngSubmit)="saveExamDates()" class="dialog-form" novalidate>
+        @if (formExamError()) {
+          <div class="notice-banner banner-warning" role="alert">
+            <span>{{ formExamError() }}</span>
+          </div>
+        }
+
+        <!-- Warning if date change cuts off papers -->
+        @if (examDateChangeConflicts().length > 0) {
+          <div class="notice-banner banner-warning" role="alert">
+            <span class="banner-icon">&#9888;</span>
+            <div>
+              <strong>Cannot Save:</strong>
+              The selected date range excludes {{ examDateChangeConflicts().length }} scheduled paper(s):
+              <ul class="conflict-paper-list">
+                @for (c of examDateChangeConflicts(); track c.id) {
+                  <li>{{ c.subject_name }} ({{ formatDate(c.paper_date) }})</li>
+                }
+              </ul>
+              Please reschedule these papers first.
+            </div>
+          </div>
+        }
+
+        <div class="form-group">
+          <label for="detailExamTitle" class="form-label">Exam Title *</label>
+          <input
+            id="detailExamTitle"
+            type="text"
+            class="form-control"
+            [ngModel]="formExamTitle()"
+            (ngModelChange)="formExamTitle.set($event)"
+            name="detailExamTitle"
+            required
+          />
+        </div>
+
+        <div class="form-row-2">
+          <div class="form-group">
+            <label for="detailStartDate" class="form-label">Start Date *</label>
+            <input
+              id="detailStartDate"
+              type="date"
+              class="form-control"
+              [ngModel]="formExamStartDate()"
+              (ngModelChange)="formExamStartDate.set($event)"
+              name="detailStartDate"
+              required
+            />
+          </div>
+
+          <div class="form-group">
+            <label for="detailEndDate" class="form-label">End Date *</label>
+            <input
+              id="detailEndDate"
+              type="date"
+              class="form-control"
+              [ngModel]="formExamEndDate()"
+              (ngModelChange)="formExamEndDate.set($event)"
+              [min]="formExamStartDate()"
+              name="detailEndDate"
+              required
+            />
+          </div>
+        </div>
+
+        <div class="dialog-action-buttons">
+          <button
+            type="button"
+            class="btn btn-secondary"
+            (click)="closeEditExamDialog()"
+          >
+            Cancel
+          </button>
+          <button
+            type="submit"
+            class="btn btn-primary"
+            [disabled]="examDateChangeConflicts().length > 0"
+          >
+            Save Changes
+          </button>
+        </div>
+      </form>
+    </app-dialog>
+
+    <!-- Delete Paper Confirmation Dialog -->
+    <app-confirm-dialog
+      [isOpen]="!!targetDeletePaper()"
+      title="Delete Exam Paper"
+      [message]="'Are you sure you want to remove the paper for \'' + (targetDeletePaper()?.subject_name || 'Subject') + '\' on ' + formatDate(targetDeletePaper()?.paper_date || '') + ' from the examination schedule?'"
+      confirmButtonText="Delete Paper"
+      (confirmed)="executeDeletePaper()"
+      (cancelled)="cancelDeletePaper()"
+    ></app-confirm-dialog>
+  }
+</div>

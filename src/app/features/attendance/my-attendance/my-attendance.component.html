@@ -1,0 +1,89 @@
+<div class="my-attendance-container">
+  <!-- Month Selector & Summary Bar -->
+  <div class="filter-card">
+    <div class="filter-controls">
+      <div class="form-group month-group">
+        <label for="monthSelect" class="form-label">
+          Select Month
+          @if (formattedMonth()) {
+            <span class="month-display-hint">({{ formattedMonth() }})</span>
+          }
+        </label>
+        <input
+          id="monthSelect"
+          type="month"
+          class="form-control"
+          [value]="month()"
+          [max]="maxMonth"
+          (change)="onMonthSelect($event)"
+          [disabled]="loading()"
+        />
+      </div>
+    </div>
+
+    <!-- Monthly Summary Counters -->
+    <div class="monthly-summary" aria-label="Monthly attendance summary">
+      <div class="summary-pill pill-present">
+        <span class="pill-label">Present:</span>
+        <span class="pill-value">{{ summary().present }}</span>
+      </div>
+      <div class="summary-pill pill-absent">
+        <span class="pill-label">Absent:</span>
+        <span class="pill-value">{{ summary().absent }}</span>
+      </div>
+      <div class="summary-pill pill-late">
+        <span class="pill-label">Late:</span>
+        <span class="pill-value">{{ summary().late }}</span>
+      </div>
+      <div class="summary-pill pill-leave">
+        <span class="pill-label">Leave:</span>
+        <span class="pill-value">{{ summary().leave }}</span>
+      </div>
+      <div class="summary-pill pill-total">
+        <span class="pill-label">Total Days:</span>
+        <span class="pill-value">{{ summary().total }}</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Loading State -->
+  @if (loading()) {
+    <app-loading-spinner message="Loading your attendance records..."></app-loading-spinner>
+  } @else if (records().length === 0) {
+    <!-- Empty State -->
+    <app-empty-state
+      icon="attendance"
+      title="No Records Found"
+      message="No attendance records found for this month."
+    ></app-empty-state>
+  } @else {
+    <!-- Read-Only Monthly Attendance Table -->
+    <div class="table-container">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th class="col-date">Date</th>
+            <th class="col-status">Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (r of records(); track r.id) {
+            <tr>
+              <td class="col-date">
+                <span class="date-text">{{ formatDate(r.date) }}</span>
+              </td>
+              <td class="col-status">
+                <span
+                  class="status-badge"
+                  [ngClass]="'badge-' + r.status"
+                >
+                  {{ r.status }}
+                </span>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+</div>

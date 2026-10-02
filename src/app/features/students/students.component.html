@@ -1,0 +1,498 @@
+<div class="feature-container">
+  <app-page-header
+    title="Students Directory"
+    subtitle="Enrolled students roster, class assignments, guardian contacts, and account status"
+  >
+    @if (isAdmin()) {
+      <button
+        type="button"
+        class="btn btn-primary"
+        (click)="openCreateDialog()"
+      >
+        + Add Student
+      </button>
+    }
+  </app-page-header>
+
+  <!-- Filter & Search Toolbar -->
+  <div class="filter-card">
+    <div class="filter-controls">
+      <div class="search-input-wrapper">
+        <input
+          type="search"
+          class="form-control"
+          placeholder="Search by name, roll no, or phone..."
+          [value]="searchQuery()"
+          (input)="onSearchChange($event)"
+        />
+      </div>
+
+      <div class="filter-item">
+        <label for="studentClassFilter" class="filter-label">Class:</label>
+        <select
+          id="studentClassFilter"
+          class="form-select"
+          [value]="selectedClassId()"
+          (change)="onClassFilterChange($event)"
+        >
+          <option value="all">All Classes</option>
+          @for (cls of classesService.items(); track cls.id) {
+            <option [value]="cls.id">{{ cls.name }} - {{ cls.section }} ({{ cls.academic_year }})</option>
+          }
+        </select>
+      </div>
+
+      <div class="filter-item">
+        <label for="studentStatusFilter" class="filter-label">Status:</label>
+        <select
+          id="studentStatusFilter"
+          class="form-select"
+          [value]="selectedStatus()"
+          (change)="onStatusFilterChange($event)"
+        >
+          <option value="all">All Statuses</option>
+          <option value="active">Active Only</option>
+          <option value="inactive">Inactive Only</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="result-counter">
+      Showing {{ filteredStudents().length }} of {{ studentsService.totalCount() }} students
+    </div>
+  </div>
+
+  @if (studentsService.loading()) {
+    <app-loading-spinner message="Loading students roster..."></app-loading-spinner>
+  } @else if (filteredStudents().length === 0) {
+    <app-empty-state
+      title="No students found"
+      [message]="searchQuery() || selectedClassId() !== 'all' || selectedStatus() !== 'all' ? 'No students match your search criteria.' : 'No students registered in the system yet.'"
+    ></app-empty-state>
+  } @else {
+    <!-- Desktop Table View -->
+    <div class="table-container desktop-view">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Roll No</th>
+            <th>Student Name</th>
+            <th>Class / Section</th>
+            <th>Phone</th>
+            <th>Guardian Name</th>
+            <th>Guardian Phone</th>
+            <th>Status</th>
+            @if (isAdmin()) {
+              <th class="text-right">Actions</th>
+            }
+          </tr>
+        </thead>
+        <tbody>
+          @for (item of filteredStudents(); track item.id) {
+            <tr>
+              <td>
+                <span class="roll-badge">#{{ item.roll_no }}</span>
+              </td>
+              <td class="font-bold text-main">{{ item.full_name }}</td>
+              <td>
+                @if (item.class_name) {
+                  <span class="class-pill">{{ item.class_name }} - {{ item.class_section }}</span>
+                } @else {
+                  <span class="text-muted">Unassigned</span>
+                }
+              </td>
+              <td>{{ item.phone || '—' }}</td>
+              <td>{{ item.guardian_name || '—' }}</td>
+              <td>{{ item.guardian_phone || '—' }}</td>
+              <td>
+                <span
+                  class="status-badge"
+                  [class.badge-active]="item.is_active"
+                  [class.badge-inactive]="!item.is_active"
+                >
+                  {{ item.is_active ? 'Active' : 'Inactive' }}
+                </span>
+              </td>
+              @if (isAdmin()) {
+                <td class="text-right">
+                  <div class="actions-group">
+                    <button
+                      type="button"
+                      class="btn-icon"
+                      title="Edit Student"
+                      (click)="openEditDialog(item)"
+                    >
+                      Edit
+                    </button>
+                    @if (item.is_active) {
+                      <button
+                        type="button"
+                        class="btn-icon text-danger"
+                        title="Deactivate Student"
+                        (click)="openStatusConfirmDialog(item, false)"
+                      >
+                        Deactivate
+                      </button>
+                    } @else {
+                      <button
+                        type="button"
+                        class="btn-icon text-success"
+                        title="Activate Student"
+                        (click)="openStatusConfirmDialog(item, true)"
+                      >
+                        Activate
+                      </button>
+                    }
+                  </div>
+                </td>
+              }
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Mobile Cards View -->
+    <div class="mobile-cards-view">
+      @for (item of filteredStudents(); track item.id) {
+        <div class="card-item">
+          <div class="card-header">
+            <div>
+              <h3 class="card-title">{{ item.full_name }}</h3>
+              <span class="roll-badge">Roll #{{ item.roll_no }}</span>
+            </div>
+            <span
+              class="status-badge"
+              [class.badge-active]="item.is_active"
+              [class.badge-inactive]="!item.is_active"
+            >
+              {{ item.is_active ? 'Active' : 'Inactive' }}
+            </span>
+          </div>
+
+          <div class="card-details">
+            <div class="detail-row">
+              <span class="detail-label">Class:</span>
+              <span class="detail-value">
+                {{ item.class_name ? item.class_name + ' - ' + item.class_section : 'Unassigned' }}
+              </span>
+            </div>
+            <div class="detail-row">
+              <span class="detail-label">Phone:</span>
+              <span class="detail-value">{{ item.phone || '—' }}</span>
+            </div>
+            <div class="detail-row">
+              <span class="detail-label">Guardian:</span>
+              <span class="detail-value">{{ item.guardian_name || '—' }}</span>
+            </div>
+            <div class="detail-row">
+              <span class="detail-label">Guardian Phone:</span>
+              <span class="detail-value">{{ item.guardian_phone || '—' }}</span>
+            </div>
+          </div>
+
+          @if (isAdmin()) {
+            <div class="card-actions">
+              <button
+                type="button"
+                class="btn btn-secondary btn-sm flex-1"
+                (click)="openEditDialog(item)"
+              >
+                Edit
+              </button>
+              @if (item.is_active) {
+                <button
+                  type="button"
+                  class="btn btn-secondary btn-sm text-danger flex-1"
+                  (click)="openStatusConfirmDialog(item, false)"
+                >
+                  Deactivate
+                </button>
+              } @else {
+                <button
+                  type="button"
+                  class="btn btn-secondary btn-sm text-success flex-1"
+                  (click)="openStatusConfirmDialog(item, true)"
+                >
+                  Activate
+                </button>
+              }
+            </div>
+          }
+        </div>
+      }
+    </div>
+
+    <!-- Pagination / Load More -->
+    @if (studentsService.hasMore()) {
+      <div class="load-more-container">
+        <button
+          type="button"
+          class="btn btn-secondary"
+          [disabled]="studentsService.loadingMore()"
+          (click)="onLoadMore()"
+        >
+          @if (studentsService.loadingMore()) {
+            <span class="btn-spinner" aria-hidden="true"></span>
+          }
+          <span>Load More Students</span>
+        </button>
+      </div>
+    }
+  }
+</div>
+
+<!-- ========================================================================= -->
+<!-- Add Student Dialog -->
+<!-- ========================================================================= -->
+<app-dialog
+  [isOpen]="isCreateDialogOpen()"
+  title="Add New Student Record"
+  size="md"
+  (closed)="closeCreateDialog()"
+>
+  <form
+    [formGroup]="studentForm"
+    (ngSubmit)="onCreateSubmit()"
+    id="createStudentForm"
+    class="dialog-form"
+  >
+    <div class="form-group">
+      <label for="studName" class="form-label">Student Full Name *</label>
+      <input
+        id="studName"
+        type="text"
+        class="form-control"
+        placeholder="e.g. Liam Johnson"
+        formControlName="full_name"
+        [class.is-invalid]="studentForm.controls.full_name.invalid && studentForm.controls.full_name.touched"
+      />
+      @if (studentForm.controls.full_name.invalid && studentForm.controls.full_name.touched) {
+        <span class="form-error">Student full name is required (max 100 characters).</span>
+      }
+    </div>
+
+    <div class="form-row-2">
+      <div class="form-group">
+        <label for="studClassSelect" class="form-label">Class & Section *</label>
+        <select
+          id="studClassSelect"
+          class="form-select"
+          formControlName="class_id"
+          [class.is-invalid]="studentForm.controls.class_id.invalid && studentForm.controls.class_id.touched"
+        >
+          <option value="">-- Choose Class --</option>
+          @for (cls of classesService.items(); track cls.id) {
+            <option [value]="cls.id">{{ cls.name }} - {{ cls.section }} ({{ cls.academic_year }})</option>
+          }
+        </select>
+        @if (studentForm.controls.class_id.invalid && studentForm.controls.class_id.touched) {
+          <span class="form-error">Please select an enrolled class.</span>
+        }
+      </div>
+
+      <div class="form-group">
+        <label for="studRollNo" class="form-label">Roll Number *</label>
+        <input
+          id="studRollNo"
+          type="number"
+          min="1"
+          class="form-control"
+          placeholder="e.g. 15"
+          formControlName="roll_no"
+          [class.is-invalid]="studentForm.controls.roll_no.invalid && studentForm.controls.roll_no.touched"
+        />
+        @if (studentForm.controls.roll_no.invalid && studentForm.controls.roll_no.touched) {
+          <span class="form-error">Positive roll number is required.</span>
+        }
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label for="studPhone" class="form-label">Student Contact Phone (Optional)</label>
+      <input
+        id="studPhone"
+        type="tel"
+        class="form-control"
+        placeholder="Optional student phone"
+        formControlName="phone"
+      />
+    </div>
+
+    <div class="form-row-2">
+      <div class="form-group">
+        <label for="studGName" class="form-label">Guardian Name</label>
+        <input
+          id="studGName"
+          type="text"
+          class="form-control"
+          placeholder="e.g. Michael Johnson"
+          formControlName="guardian_name"
+        />
+      </div>
+
+      <div class="form-group">
+        <label for="studGPhone" class="form-label">Guardian Phone</label>
+        <input
+          id="studGPhone"
+          type="tel"
+          class="form-control"
+          placeholder="e.g. +1 555-0144"
+          formControlName="guardian_phone"
+        />
+      </div>
+    </div>
+  </form>
+
+  <div dialog-actions class="dialog-action-buttons">
+    <button
+      type="button"
+      class="btn btn-secondary"
+      [disabled]="studentsService.saving()"
+      (click)="closeCreateDialog()"
+    >
+      Cancel
+    </button>
+    <button
+      type="submit"
+      form="createStudentForm"
+      class="btn btn-primary"
+      [disabled]="studentsService.saving()"
+    >
+      @if (studentsService.saving()) {
+        <span class="btn-spinner" aria-hidden="true"></span>
+      }
+      <span>Create Student Record</span>
+    </button>
+  </div>
+</app-dialog>
+
+<!-- ========================================================================= -->
+<!-- Edit Student Dialog -->
+<!-- ========================================================================= -->
+<app-dialog
+  [isOpen]="isEditDialogOpen()"
+  [title]="'Edit Student: ' + (selectedStudent()?.full_name || '')"
+  size="md"
+  (closed)="closeEditDialog()"
+>
+  <form
+    [formGroup]="studentForm"
+    (ngSubmit)="onEditSubmit()"
+    id="editStudentForm"
+    class="dialog-form"
+  >
+    <div class="form-group">
+      <label for="editStudName" class="form-label">Student Full Name *</label>
+      <input
+        id="editStudName"
+        type="text"
+        class="form-control"
+        formControlName="full_name"
+        [class.is-invalid]="studentForm.controls.full_name.invalid && studentForm.controls.full_name.touched"
+      />
+      @if (studentForm.controls.full_name.invalid && studentForm.controls.full_name.touched) {
+        <span class="form-error">Full name is required.</span>
+      }
+    </div>
+
+    <div class="form-row-2">
+      <div class="form-group">
+        <label for="editStudClassSelect" class="form-label">Class & Section *</label>
+        <select
+          id="editStudClassSelect"
+          class="form-select"
+          formControlName="class_id"
+          [class.is-invalid]="studentForm.controls.class_id.invalid && studentForm.controls.class_id.touched"
+        >
+          <option value="">-- Choose Class --</option>
+          @for (cls of classesService.items(); track cls.id) {
+            <option [value]="cls.id">{{ cls.name }} - {{ cls.section }} ({{ cls.academic_year }})</option>
+          }
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label for="editStudRollNo" class="form-label">Roll Number *</label>
+        <input
+          id="editStudRollNo"
+          type="number"
+          min="1"
+          class="form-control"
+          formControlName="roll_no"
+          [class.is-invalid]="studentForm.controls.roll_no.invalid && studentForm.controls.roll_no.touched"
+        />
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label for="editStudPhone" class="form-label">Student Contact Phone (Optional)</label>
+      <input
+        id="editStudPhone"
+        type="tel"
+        class="form-control"
+        formControlName="phone"
+      />
+    </div>
+
+    <div class="form-row-2">
+      <div class="form-group">
+        <label for="editStudGName" class="form-label">Guardian Name</label>
+        <input
+          id="editStudGName"
+          type="text"
+          class="form-control"
+          formControlName="guardian_name"
+        />
+      </div>
+
+      <div class="form-group">
+        <label for="editStudGPhone" class="form-label">Guardian Phone</label>
+        <input
+          id="editStudGPhone"
+          type="tel"
+          class="form-control"
+          formControlName="guardian_phone"
+        />
+      </div>
+    </div>
+  </form>
+
+  <div dialog-actions class="dialog-action-buttons">
+    <button
+      type="button"
+      class="btn btn-secondary"
+      [disabled]="studentsService.saving()"
+      (click)="closeEditDialog()"
+    >
+      Cancel
+    </button>
+    <button
+      type="submit"
+      form="editStudentForm"
+      class="btn btn-primary"
+      [disabled]="studentsService.saving()"
+    >
+      @if (studentsService.saving()) {
+        <span class="btn-spinner" aria-hidden="true"></span>
+      }
+      <span>Save Changes</span>
+    </button>
+  </div>
+</app-dialog>
+
+<!-- ========================================================================= -->
+<!-- Deactivate / Activate Confirm Dialog -->
+<!-- ========================================================================= -->
+<app-confirm-dialog
+  [isOpen]="isStatusConfirmOpen()"
+  [title]="targetStatusAction() ? 'Activate Student Record' : 'Deactivate Student Record'"
+  [message]="targetStatusAction() 
+    ? 'Are you sure you want to activate ' + (selectedStudent()?.full_name || 'this student') + '?'
+    : 'Are you sure you want to deactivate ' + (selectedStudent()?.full_name || 'this student') + '? They will remain in records to preserve attendance history.'"
+  [confirmText]="targetStatusAction() ? 'Activate' : 'Deactivate'"
+  [isDestructive]="!targetStatusAction()"
+  [isProcessing]="studentsService.saving()"
+  (confirmed)="onConfirmStatusChange()"
+  (cancelled)="closeStatusConfirmDialog()"
+></app-confirm-dialog>

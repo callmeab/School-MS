@@ -1,0 +1,251 @@
+.exam-detail-page {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.back-nav {
+  margin-bottom: -0.25rem;
+}
+
+.back-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--primary-color);
+  text-decoration: none;
+
+  &:hover {
+    color: var(--primary-hover);
+    text-decoration: underline;
+  }
+}
+
+.exam-header-card {
+  background-color: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  padding: 1.25rem 1.5rem;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 1.25rem;
+  box-shadow: var(--shadow-sm);
+}
+
+.exam-header-main {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.title-with-badge {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.exam-title {
+  margin: 0;
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: var(--text-main);
+}
+
+.exam-meta-items {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  flex-wrap: wrap;
+  font-size: 0.95rem;
+}
+
+.meta-item {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.meta-label {
+  color: var(--text-muted);
+}
+
+.meta-val {
+  color: var(--text-main);
+}
+
+.exam-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.btn-icon-plus, .print-icon, .banner-icon {
+  font-size: 1.1rem;
+}
+
+.conflict-paper-list {
+  margin: 0.35rem 0 0 1.25rem;
+  padding: 0;
+}
+
+.btn-link {
+  background: none;
+  border: none;
+  color: var(--primary-color);
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: underline;
+  padding: 0 0.25rem;
+}
+
+.papers-pill {
+  display: inline-flex;
+  padding: 0.2rem 0.55rem;
+  background-color: #f1f5f9;
+  border: 1px solid #cbd5e1;
+  border-radius: 9999px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #334155;
+}
+
+.col-date { width: 160px; }
+.col-time { width: 200px; }
+.col-subject { min-width: 220px; }
+.col-room { width: 140px; }
+.col-marks { width: 130px; }
+
+.time-badge {
+  display: inline-flex;
+  padding: 0.25rem 0.6rem;
+  background-color: var(--bg-muted);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.subject-info {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.subject-code-tag {
+  display: inline-flex;
+  padding: 0.15rem 0.45rem;
+  background-color: #eff6ff;
+  border: 1px solid #bfdbfe;
+  border-radius: var(--radius-sm);
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #1e40af;
+}
+
+.marks-pill {
+  display: inline-flex;
+  padding: 0.25rem 0.6rem;
+  background-color: #ecfdf5;
+  border: 1px solid #a7f3d0;
+  border-radius: 9999px;
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #047857;
+}
+
+.date-bounds-hint {
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: var(--text-muted);
+  margin-left: 0.25rem;
+}
+
+.form-row-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+/* Mobile View */
+.mobile-view { display: none; }
+
+.paper-card-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+}
+
+.paper-card {
+  background-color: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  padding: 1.1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+  box-shadow: var(--shadow-sm);
+
+  .paper-card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+  }
+
+  .paper-card-details {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+    font-size: 0.9rem;
+
+    .detail-row {
+      display: flex;
+      gap: 0.5rem;
+
+      .detail-label {
+        font-weight: 600;
+        color: var(--text-muted);
+        min-width: 60px;
+      }
+    }
+  }
+
+  .paper-card-actions {
+    display: flex;
+    gap: 0.5rem;
+    padding-top: 0.5rem;
+    border-top: 1px solid var(--border-color);
+  }
+}
+
+.flex-1 { flex: 1; }
+
+@media (max-width: 768px) {
+  .desktop-view { display: none; }
+  .mobile-view { display: block; }
+
+  .exam-header-card {
+    flex-direction: column;
+    align-items: stretch;
+
+    .exam-header-actions {
+      width: 100%;
+      .btn { flex: 1; }
+    }
+  }
+
+  .exam-meta-items {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.4rem;
+  }
+
+  .form-row-2 { grid-template-columns: 1fr; }
+}

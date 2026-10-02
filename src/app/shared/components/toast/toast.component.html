@@ -1,0 +1,15 @@
+<aside class="toast-container" aria-live="polite">
+  @for (toast of toastService.toasts(); track toast.id) {
+    <div class="toast-item" [class]="'toast-' + toast.type" role="alert">
+      <span class="toast-message">{{ toast.message }}</span>
+      <button
+        type="button"
+        class="toast-close"
+        (click)="toastService.remove(toast.id)"
+        aria-label="Close notification"
+      >
+        &times;
+      </button>
+    </div>
+  }
+</aside>

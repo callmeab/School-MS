@@ -1,0 +1,398 @@
+<div class="feature-container">
+  <app-page-header
+    title="Classes & Sections"
+    subtitle="Configure grade levels, sections, and subject assignments"
+  >
+    <div actions>
+      @if (authService.isAdmin()) {
+        <button
+          type="button"
+          class="btn btn-primary"
+          (click)="openAddDialog()"
+        >
+          <app-icon name="classes" [size]="18" />
+          <span>Add Class</span>
+        </button>
+      }
+    </div>
+  </app-page-header>
+
+  <!-- Filter & Search Controls -->
+  <div class="filter-card">
+    <div class="filter-controls">
+      <!-- Search Box -->
+      <div class="search-input-wrapper">
+        <input
+          type="search"
+          class="form-control"
+          placeholder="Search by class name, section, or year..."
+          [value]="searchTerm()"
+          (input)="onSearchChange($event)"
+        />
+      </div>
+
+      <!-- Academic Year Filter -->
+      <div class="year-filter-wrapper">
+        <label for="yearFilter" class="filter-label">Academic Year:</label>
+        <select
+          id="yearFilter"
+          class="form-select"
+          [value]="selectedYear()"
+          (change)="onYearChange($event)"
+        >
+          <option value="ALL">All Years</option>
+          @for (year of academicYears(); track year) {
+            <option [value]="year">{{ year }}</option>
+          }
+        </select>
+      </div>
+    </div>
+
+    <div class="result-counter">
+      Showing <strong>{{ filteredClasses().length }}</strong> classes
+    </div>
+  </div>
+
+  <!-- Loading State -->
+  @if (classesService.loading()) {
+    <app-loading-spinner message="Loading classes and sections..." />
+  } @else if (filteredClasses().length === 0) {
+    <!-- Empty State -->
+    <app-empty-state
+      [title]="searchTerm() || selectedYear() !== 'ALL' ? 'No matching classes found' : 'No classes created yet'"
+      [message]="searchTerm() || selectedYear() !== 'ALL' ? 'Try adjusting your search criteria.' : 'Create your school’s first class to get started.'"
+    >
+      @if (authService.isAdmin() && !searchTerm() && selectedYear() === 'ALL') {
+        <button type="button" class="btn btn-primary" (click)="openAddDialog()">
+          Add Class Now
+        </button>
+      }
+    </app-empty-state>
+  } @else {
+    <!-- Table View (Desktop & Tablet) -->
+    <div class="table-container desktop-view">
+      <table class="data-table" role="table">
+        <thead>
+          <tr>
+            <th scope="col">Class Name</th>
+            <th scope="col">Section</th>
+            <th scope="col">Academic Year</th>
+            <th scope="col">Assigned Subjects</th>
+            <th scope="col" class="text-right">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (cls of filteredClasses(); track cls.id) {
+            <tr>
+              <td class="font-bold text-main">
+                {{ cls.name }}
+              </td>
+              <td>
+                <span class="section-badge">Section {{ cls.section }}</span>
+              </td>
+              <td>
+                <span class="year-badge">{{ cls.academic_year }}</span>
+              </td>
+              <td>
+                <button
+                  type="button"
+                  class="badge-btn"
+                  (click)="openManageSubjects(cls)"
+                  title="Click to view assigned subjects"
+                >
+                  <app-icon name="subjects" [size]="14" />
+                  <span>{{ cls.subjects_count ?? 0 }} Subjects</span>
+                </button>
+              </td>
+              <td class="text-right">
+                <div class="actions-group">
+                  <button
+                    type="button"
+                    class="btn-icon"
+                    (click)="openManageSubjects(cls)"
+                    title="Manage subjects"
+                  >
+                    Subjects
+                  </button>
+                  @if (authService.isAdmin()) {
+                    <button
+                      type="button"
+                      class="btn-icon"
+                      (click)="openEditDialog(cls)"
+                      title="Edit class"
+                    >
+                      Edit
+                    </button>
+                    <button
+                      type="button"
+                      class="btn-icon text-danger"
+                      (click)="confirmDelete(cls)"
+                      title="Delete class"
+                    >
+                      Delete
+                    </button>
+                  }
+                </div>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Mobile Card View (<768px) -->
+    <div class="mobile-cards-view">
+      @for (cls of filteredClasses(); track cls.id) {
+        <div class="class-card">
+          <div class="card-header">
+            <h3 class="card-title">{{ cls.name }}</h3>
+            <span class="section-badge">Section {{ cls.section }}</span>
+          </div>
+
+          <div class="card-details">
+            <div class="detail-row">
+              <span class="detail-label">Academic Year:</span>
+              <span class="detail-value">{{ cls.academic_year }}</span>
+            </div>
+            <div class="detail-row">
+              <span class="detail-label">Subjects:</span>
+              <button
+                type="button"
+                class="badge-btn"
+                (click)="openManageSubjects(cls)"
+              >
+                {{ cls.subjects_count ?? 0 }} Subjects
+              </button>
+            </div>
+          </div>
+
+          <div class="card-actions">
+            <button
+              type="button"
+              class="btn btn-secondary btn-sm"
+              (click)="openManageSubjects(cls)"
+            >
+              Subjects
+            </button>
+            @if (authService.isAdmin()) {
+              <button
+                type="button"
+                class="btn btn-secondary btn-sm"
+                (click)="openEditDialog(cls)"
+              >
+                Edit
+              </button>
+              <button
+                type="button"
+                class="btn btn-danger btn-sm"
+                (click)="confirmDelete(cls)"
+              >
+                Delete
+              </button>
+            }
+          </div>
+        </div>
+      }
+    </div>
+  }
+</div>
+
+<!-- Add / Edit Class Dialog -->
+<app-dialog
+  [isOpen]="isFormDialogOpen()"
+  [title]="editingClass() ? 'Edit Class' : 'Add New Class'"
+  size="sm"
+  [closeOnBackdrop]="!classesService.saving()"
+  (closed)="closeFormDialog()"
+>
+  <form [formGroup]="classForm" (ngSubmit)="saveClass()" novalidate class="dialog-form">
+    <div class="form-group">
+      <label for="className" class="form-label">Class / Grade Name *</label>
+      <input
+        id="className"
+        type="text"
+        class="form-control"
+        formControlName="name"
+        placeholder="e.g. Grade 10, Class 5"
+        [class.is-invalid]="classForm.get('name')?.invalid && classForm.get('name')?.touched"
+      />
+      @if (classForm.get('name')?.invalid && classForm.get('name')?.touched) {
+        <div class="form-error">Class name is required.</div>
+      }
+    </div>
+
+    <div class="form-group">
+      <label for="classSection" class="form-label">Section *</label>
+      <input
+        id="classSection"
+        type="text"
+        class="form-control"
+        formControlName="section"
+        placeholder="e.g. A, B, Green"
+        [class.is-invalid]="classForm.get('section')?.invalid && classForm.get('section')?.touched"
+      />
+      @if (classForm.get('section')?.invalid && classForm.get('section')?.touched) {
+        <div class="form-error">Section is required.</div>
+      }
+    </div>
+
+    <div class="form-group">
+      <label for="academicYear" class="form-label">Academic Year *</label>
+      <input
+        id="academicYear"
+        type="text"
+        class="form-control"
+        formControlName="academic_year"
+        placeholder="e.g. 2026-2027"
+        [class.is-invalid]="classForm.get('academic_year')?.invalid && classForm.get('academic_year')?.touched"
+      />
+      @if (classForm.get('academic_year')?.invalid && classForm.get('academic_year')?.touched) {
+        <div class="form-error">Academic year is required.</div>
+      }
+    </div>
+
+    <div dialog-actions class="dialog-action-buttons">
+      <button
+        type="button"
+        class="btn btn-secondary"
+        (click)="closeFormDialog()"
+        [disabled]="classesService.saving()"
+      >
+        Cancel
+      </button>
+      <button
+        type="submit"
+        class="btn btn-primary"
+        [disabled]="classForm.invalid || classesService.saving()"
+      >
+        @if (classesService.saving()) {
+          <span class="btn-spinner" aria-hidden="true"></span>
+          Saving...
+        } @else {
+          {{ editingClass() ? 'Save Changes' : 'Create Class' }}
+        }
+      </button>
+    </div>
+  </form>
+</app-dialog>
+
+<!-- Manage Class Subjects Modal -->
+<app-dialog
+  [isOpen]="isManageSubjectsOpen()"
+  [title]="'Assigned Subjects - ' + (activeClassForSubjects()?.name ?? '') + ' (' + (activeClassForSubjects()?.section ?? '') + ')'"
+  size="md"
+  [closeOnBackdrop]="!classesService.saving()"
+  (closed)="closeManageSubjects()"
+>
+  <div class="manage-subjects-container">
+    <!-- Add Subject to Class (Admin only) -->
+    @if (authService.isAdmin()) {
+      <div class="add-subject-panel">
+        <label for="assignSubjectSelect" class="form-label">Assign New Subject:</label>
+        <div class="add-subject-row">
+          <select
+            id="assignSubjectSelect"
+            class="form-select flex-1"
+            [value]="selectedSubjectToAdd()"
+            (change)="onSubjectSelectChange($event)"
+            [disabled]="classesService.saving()"
+          >
+            <option value="">-- Choose subject to add --</option>
+            @for (subj of availableSubjects(); track subj.id) {
+              <option [value]="subj.id">{{ subj.name }} ({{ subj.code }})</option>
+            }
+          </select>
+          <button
+            type="button"
+            class="btn btn-primary"
+            (click)="addSubject()"
+            [disabled]="!selectedSubjectToAdd() || classesService.saving()"
+          >
+            Assign Subject
+          </button>
+        </div>
+        @if (availableSubjects().length === 0) {
+          <small class="text-muted">All registered subjects are already assigned to this class.</small>
+        }
+      </div>
+    }
+
+    <!-- Current Subjects List -->
+    <div class="current-subjects-section">
+      <h4 class="section-heading">Assigned Curriculum Subjects</h4>
+
+      @if (classesService.loadingClassSubjects()) {
+        <app-loading-spinner message="Loading assigned subjects..." />
+      } @else if (classesService.classSubjects().length === 0) {
+        <p class="empty-hint">No subjects currently assigned to this class.</p>
+      } @else {
+        <ul class="subjects-chip-list" role="list">
+          @for (item of classesService.classSubjects(); track item.id) {
+            <li class="subject-chip">
+              <div class="subject-chip-info">
+                <span class="chip-title">{{ item.subject_name }}</span>
+                <span class="chip-code">{{ item.subject_code }}</span>
+              </div>
+
+              <div class="subject-teacher-assignment">
+                @if (authService.isAdmin()) {
+                  <select
+                    class="form-select form-select-sm"
+                    [value]="item.teacher_id || ''"
+                    (change)="onTeacherAssignChange(item.id, $event)"
+                    [disabled]="classesService.saving()"
+                    title="Assign faculty teacher"
+                  >
+                    <option value="">-- Unassigned --</option>
+                    @for (t of teachersService.activeTeachers(); track t.id) {
+                      <option [value]="t.id">{{ t.full_name }} ({{ t.employee_code }})</option>
+                    }
+                  </select>
+                } @else {
+                  <span class="assigned-teacher-label">
+                    Faculty: <strong>{{ item.teacher_name ? item.teacher_name + ' (' + item.teacher_employee_code + ')' : 'Unassigned' }}</strong>
+                  </span>
+                }
+              </div>
+
+              @if (authService.isAdmin()) {
+                <button
+                  type="button"
+                  class="chip-remove-btn"
+                  (click)="removeSubject(item.id)"
+                  [disabled]="classesService.saving()"
+                  aria-label="Remove subject"
+                  title="Remove from class"
+                >
+                  &times;
+                </button>
+              }
+            </li>
+          }
+        </ul>
+      }
+    </div>
+  </div>
+
+  <div dialog-actions>
+    <button
+      type="button"
+      class="btn btn-secondary"
+      (click)="closeManageSubjects()"
+    >
+      Close
+    </button>
+  </div>
+</app-dialog>
+
+<!-- Delete Class Confirm Dialog -->
+<app-confirm-dialog
+  [isOpen]="isDeleteDialogOpen()"
+  title="Delete Class"
+  [message]="'Are you sure you want to delete ' + (targetDeleteClass()?.name ?? 'this class') + ' Section ' + (targetDeleteClass()?.section ?? '') + '? Warning: If students or attendance records are linked to this class, the operation will be rejected.'"
+  confirmText="Delete Class"
+  [isDestructive]="true"
+  [isProcessing]="classesService.saving()"
+  (confirmed)="executeDelete()"
+  (cancelled)="cancelDelete()"
+/>

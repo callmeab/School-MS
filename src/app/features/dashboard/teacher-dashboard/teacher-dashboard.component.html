@@ -1,0 +1,149 @@
+<div class="teacher-dashboard">
+  <!-- Top Grid: My Assigned Classes & Today's Attendance -->
+  <div class="dashboard-grid">
+    <!-- Left Column: My Assigned Classes -->
+    <div class="dashboard-col">
+      <div class="dash-card">
+        <div class="dash-card-header">
+          <div class="header-left">
+            <h2 class="dash-card-title">My Assigned Classes</h2>
+            <span class="dash-card-subtitle">Daily attendance status for your classes</span>
+          </div>
+          @if (errorMyClasses()) {
+            <button type="button" class="btn-retry" (click)="retryMyClasses()">Retry</button>
+          }
+        </div>
+
+        <div class="dash-card-body">
+          @if (loadingMyClasses()) {
+            <app-loading-spinner message="Loading your assigned classes..."></app-loading-spinner>
+          } @else if (errorMyClasses()) {
+            <div class="section-error-box">
+              <span>Failed to load assigned classes.</span>
+              <button type="button" class="btn btn-secondary btn-sm" (click)="retryMyClasses()">Retry</button>
+            </div>
+          } @else if (myClasses().length === 0) {
+            <app-empty-state
+              icon="classes"
+              title="No Classes Assigned"
+              message="No classes have been assigned to you yet. Please contact the school administration."
+            ></app-empty-state>
+          } @else {
+            <ul class="class-status-list">
+              @for (c of myClasses(); track c.class_id) {
+                <li class="class-status-item">
+                  <div class="class-info">
+                    <strong class="class-name-text">{{ c.class_name }} - Section {{ c.class_section }}</strong>
+                    <span class="class-year-text">Academic Year {{ c.academic_year }}</span>
+                  </div>
+
+                  <div class="class-actions">
+                    @if (c.is_marked_today) {
+                      <span class="status-badge badge-ongoing">Marked Today</span>
+                      <a routerLink="/attendance" class="btn btn-secondary btn-sm">Edit</a>
+                    } @else {
+                      <span class="status-badge badge-absent">Not Marked Yet</span>
+                      <a routerLink="/attendance" class="btn btn-primary btn-sm">Mark Now</a>
+                    }
+                  </div>
+                </li>
+              }
+            </ul>
+          }
+        </div>
+      </div>
+    </div>
+
+    <!-- Right Column: Today's Summary & Upcoming Exams -->
+    <div class="dashboard-col">
+      <!-- Today's Attendance Counts -->
+      <div class="dash-card">
+        <div class="dash-card-header">
+          <div class="header-left">
+            <h2 class="dash-card-title">Today's Class Attendance Summary</h2>
+            <span class="dash-card-subtitle">Aggregate attendance counts for today</span>
+          </div>
+          @if (errorTodayAttendance()) {
+            <button type="button" class="btn-retry" (click)="retryAttendance()">Retry</button>
+          }
+        </div>
+
+        <div class="dash-card-body">
+          @if (loadingTodayAttendance()) {
+            <app-loading-spinner message="Loading attendance numbers..."></app-loading-spinner>
+          } @else if (errorTodayAttendance()) {
+            <div class="section-error-box">
+              <span>Could not load attendance summary.</span>
+              <button type="button" class="btn btn-secondary btn-sm" (click)="retryAttendance()">Retry</button>
+            </div>
+          } @else {
+            <div class="summary-pill-group">
+              <div class="summary-pill pill-present">
+                <span class="pill-label">Present:</span>
+                <span class="pill-value">{{ todayAttendance().present }}</span>
+              </div>
+              <div class="summary-pill pill-absent">
+                <span class="pill-label">Absent:</span>
+                <span class="pill-value">{{ todayAttendance().absent }}</span>
+              </div>
+              <div class="summary-pill pill-late">
+                <span class="pill-label">Late:</span>
+                <span class="pill-value">{{ todayAttendance().late }}</span>
+              </div>
+              <div class="summary-pill pill-leave">
+                <span class="pill-label">Leave:</span>
+                <span class="pill-value">{{ todayAttendance().on_leave }}</span>
+              </div>
+            </div>
+          }
+        </div>
+      </div>
+
+      <!-- Upcoming Exams -->
+      <div class="dash-card">
+        <div class="dash-card-header">
+          <div class="header-left">
+            <h2 class="dash-card-title">Upcoming Examinations</h2>
+            <span class="dash-card-subtitle">School-wide examination timetable</span>
+          </div>
+          @if (errorUpcomingExams()) {
+            <button type="button" class="btn-retry" (click)="retryExams()">Retry</button>
+          }
+        </div>
+
+        <div class="dash-card-body">
+          @if (loadingUpcomingExams()) {
+            <app-loading-spinner message="Loading upcoming exams..."></app-loading-spinner>
+          } @else if (errorUpcomingExams()) {
+            <div class="section-error-box">
+              <span>Failed to load exams.</span>
+              <button type="button" class="btn btn-secondary btn-sm" (click)="retryExams()">Retry</button>
+            </div>
+          } @else if (upcomingExams().length === 0) {
+            <div class="empty-inline-notice">
+              <span>No upcoming examinations scheduled.</span>
+            </div>
+          } @else {
+            <ul class="upcoming-exams-list">
+              @for (ex of upcomingExams(); track ex.id) {
+                <li class="upcoming-exam-item">
+                  <div class="exam-info">
+                    <strong class="exam-title-text">{{ ex.title }}</strong>
+                    <div class="exam-subtext">
+                      <span>{{ ex.class_name }} - {{ ex.class_section }}</span>
+                      <span>&bull;</span>
+                      <span>{{ formatDate(ex.start_date) }} to {{ formatDate(ex.end_date) }}</span>
+                    </div>
+                  </div>
+                  <a [routerLink]="['/exams', ex.id]" class="btn btn-secondary btn-sm">
+                    View Timetable
+                  </a>
+                </li>
+              }
+            </ul>
+          }
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

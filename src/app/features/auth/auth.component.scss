@@ -1,0 +1,438 @@
+.auth-page {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  min-height: 100dvh;
+  padding: 1.5rem;
+  background: radial-gradient(circle at 10% 20%, #eff6ff 0%, #e2e8f0 90%);
+}
+
+.auth-container {
+  display: grid;
+  grid-template-columns: 1.15fr 1fr;
+  max-width: 960px;
+  width: 100%;
+  min-height: 540px;
+  background: #ffffff;
+  border-radius: 20px;
+  overflow: hidden;
+  box-shadow: 0 20px 40px -12px rgba(15, 23, 42, 0.18), 0 0 0 1px rgba(226, 232, 240, 0.8);
+}
+
+/* Brand Panel (Desktop) */
+.brand-panel {
+  position: relative;
+  background: linear-gradient(145deg, #091e42 0%, #1e3a8a 55%, #1d4ed8 100%);
+  color: #ffffff;
+  padding: 2.75rem 2.25rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  overflow: hidden;
+
+  .brand-backdrop {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+
+    .glow-orb {
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(50px);
+      opacity: 0.25;
+
+      &.orb-1 {
+        width: 200px;
+        height: 200px;
+        background: #38bdf8;
+        top: -30px;
+        left: -30px;
+      }
+
+      &.orb-2 {
+        width: 240px;
+        height: 240px;
+        background: #6366f1;
+        bottom: -40px;
+        right: -40px;
+      }
+    }
+  }
+
+  .brand-content {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 1.1rem;
+  }
+
+  .institution-badge {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+
+    .school-logo-badge {
+      width: 50px;
+      height: 50px;
+      border-radius: 12px;
+      background: rgba(255, 255, 255, 0.15);
+      border: 1px solid rgba(255, 255, 255, 0.25);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #ffd700;
+    }
+
+    .portal-pill {
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      padding: 0.25rem 0.65rem;
+      border-radius: 9999px;
+      background: rgba(255, 255, 255, 0.12);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      color: #e0e7ff;
+    }
+  }
+
+  .school-name {
+    font-size: 1.35rem;
+    font-weight: 800;
+    line-height: 1.3;
+    letter-spacing: 0.02em;
+    margin: 0;
+    color: #ffffff;
+  }
+
+  .school-tagline {
+    font-size: 0.9rem;
+    color: #cbd5e1;
+    margin: 0;
+  }
+
+  .feature-list {
+    list-style: none;
+    padding: 0;
+    margin: 0.4rem 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+
+    .feature-item {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.85rem;
+      color: #e2e8f0;
+
+      .feature-icon {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 18px;
+        height: 18px;
+        border-radius: 50%;
+        background: rgba(52, 211, 153, 0.2);
+        color: #34d399;
+        font-weight: bold;
+        font-size: 0.72rem;
+      }
+    }
+  }
+
+  .brand-footer {
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+    padding-top: 0.9rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.15);
+    font-size: 0.8rem;
+    color: #94a3b8;
+
+    .campus-tag {
+      color: #cbd5e1;
+      font-weight: 500;
+    }
+
+    .security-badge {
+      color: #93c5fd;
+    }
+  }
+}
+
+/* Form Panel */
+.form-panel {
+  padding: 2.5rem 2rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  background: #ffffff;
+
+  .mobile-school-header {
+    display: none;
+  }
+
+  .form-header {
+    margin-bottom: 1.5rem;
+
+    .welcome-pill {
+      display: inline-block;
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: #2563eb;
+      background: #eff6ff;
+      border: 1px solid #dbeafe;
+      padding: 0.2rem 0.6rem;
+      border-radius: 9999px;
+      margin-bottom: 0.4rem;
+    }
+
+    .form-title {
+      font-size: 1.5rem;
+      font-weight: 800;
+      color: #0f172a;
+      margin: 0 0 0.25rem 0;
+    }
+
+    .form-subtitle {
+      font-size: 0.85rem;
+      color: #64748b;
+      margin: 0;
+    }
+  }
+}
+
+.auth-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.1rem;
+
+  .form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+  }
+
+  .form-label {
+    font-size: 0.88rem;
+    font-weight: 600;
+    color: #1e293b;
+  }
+
+  .input-with-icon {
+    position: relative;
+    display: flex;
+    align-items: center;
+
+    .field-icon {
+      position: absolute;
+      left: 0.85rem;
+      font-size: 0.95rem;
+      color: #94a3b8;
+      pointer-events: none;
+    }
+
+    .form-control {
+      padding-left: 2.4rem;
+    }
+
+    &.password-wrapper {
+      .form-control {
+        padding-right: 4.2rem;
+      }
+
+      .password-toggle-btn {
+        position: absolute;
+        right: 0.5rem;
+        background: transparent;
+        border: none;
+        color: #475569;
+        font-size: 0.8rem;
+        font-weight: 600;
+        padding: 0.3rem 0.5rem;
+        cursor: pointer;
+        border-radius: 4px;
+
+        &:hover {
+          background: #f1f5f9;
+          color: #0f172a;
+        }
+      }
+    }
+  }
+
+  .form-control {
+    width: 100%;
+    height: 44px;
+    padding: 0 0.85rem;
+    font-size: 0.95rem;
+    border: 1.5px solid #cbd5e1;
+    border-radius: 8px;
+    background-color: #ffffff;
+    color: #0f172a;
+    outline: none;
+    transition: all 0.2s ease;
+
+    &::placeholder {
+      color: #94a3b8;
+    }
+
+    &:focus {
+      border-color: #2563eb;
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+    }
+
+    &.is-invalid {
+      border-color: #ef4444;
+    }
+  }
+
+  .invalid-feedback {
+    font-size: 0.8rem;
+    color: #dc2626;
+    font-weight: 500;
+  }
+
+  .submit-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    height: 46px;
+    width: 100%;
+    margin-top: 0.35rem;
+    background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+    color: #ffffff;
+    font-size: 0.98rem;
+    font-weight: 600;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    box-shadow: 0 4px 10px rgba(37, 99, 235, 0.2);
+    transition: all 0.2s ease;
+
+    &:hover:not(:disabled) {
+      background: linear-gradient(135deg, #1d4ed8 0%, #1e40af 100%);
+      transform: translateY(-1px);
+    }
+
+    &:disabled {
+      background: #94a3b8;
+      box-shadow: none;
+      cursor: not-allowed;
+    }
+  }
+
+  .spinner {
+    width: 16px;
+    height: 16px;
+    border: 2px solid #ffffff;
+    border-top-color: transparent;
+    border-radius: 50%;
+    animation: spin 0.6s linear infinite;
+  }
+
+  .form-footer-notice {
+    margin-top: 0.65rem;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+
+    .role-note {
+      font-size: 0.8rem;
+      color: #64748b;
+      margin: 0;
+
+      strong {
+        color: #1e293b;
+      }
+    }
+
+    .support-text {
+      font-size: 0.75rem;
+      color: #94a3b8;
+      margin: 0;
+    }
+  }
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (max-width: 860px) {
+  .auth-container {
+    grid-template-columns: 1fr;
+    max-width: 440px;
+    border-radius: 16px;
+  }
+
+  .brand-panel {
+    display: none;
+  }
+
+  .form-panel {
+    padding: 1.75rem 1.5rem;
+
+    .mobile-school-header {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      margin-bottom: 1.25rem;
+      padding-bottom: 1rem;
+      border-bottom: 1px solid #e2e8f0;
+
+      .mobile-logo-circle {
+        width: 44px;
+        height: 44px;
+        border-radius: 10px;
+        background: #eff6ff;
+        color: #2563eb;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 0.5rem;
+      }
+
+      .mobile-school-title {
+        font-size: 1.1rem;
+        font-weight: 800;
+        color: #0f172a;
+        margin: 0 0 0.2rem 0;
+        line-height: 1.3;
+      }
+
+      .mobile-sub {
+        font-size: 0.75rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        color: #64748b;
+      }
+    }
+
+    .form-header {
+      text-align: center;
+      margin-bottom: 1.15rem;
+    }
+  }
+}
+
+@media (max-width: 480px) {
+  .auth-page {
+    padding: 0.75rem;
+  }
+
+  .form-panel {
+    padding: 1.5rem 1rem;
+  }
+}

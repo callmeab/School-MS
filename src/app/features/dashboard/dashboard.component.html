@@ -1,0 +1,14 @@
+<div class="dashboard-page">
+  <app-page-header
+    title="Dashboard"
+    [subtitle]="authService.isAdmin() ? 'Administrative overview and school operations' : 'Teacher workspace and class attendance status'"
+  ></app-page-header>
+
+  <div class="dashboard-role-view">
+    @if (authService.isAdmin()) {
+      <app-admin-dashboard></app-admin-dashboard>
+    } @else if (authService.isTeacher()) {
+      <app-teacher-dashboard></app-teacher-dashboard>
+    }
+  </div>
+</div>

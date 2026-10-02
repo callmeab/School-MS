@@ -1,0 +1,4 @@
+/**
+ * Shared pipes placeholder.
+ */
+export {};

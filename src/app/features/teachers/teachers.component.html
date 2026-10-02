@@ -1,0 +1,546 @@
+<div class="feature-container">
+  <app-page-header
+    title="Teachers Directory"
+    subtitle="Manage faculty staff, employee codes, portal access, and curriculum allocation"
+  >
+    <button
+      type="button"
+      class="btn btn-primary"
+      (click)="openCreateDialog()"
+    >
+      + Add Teacher
+    </button>
+  </app-page-header>
+
+  <!-- Filter & Search Toolbar -->
+  <div class="filter-card">
+    <div class="filter-controls">
+      <div class="search-input-wrapper">
+        <input
+          type="search"
+          class="form-control"
+          placeholder="Search by name, employee code, or phone..."
+          [value]="searchQuery()"
+          (input)="onSearchChange($event)"
+        />
+      </div>
+
+      <div class="status-filter-wrapper">
+        <label for="teacherStatusFilter" class="filter-label">Status:</label>
+        <select
+          id="teacherStatusFilter"
+          class="form-select"
+          [value]="statusFilter()"
+          (change)="onStatusFilterChange($event)"
+        >
+          <option value="all">All Teachers</option>
+          <option value="active">Active Only</option>
+          <option value="inactive">Inactive Only</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="result-counter">
+      Showing {{ filteredTeachers().length }} of {{ teachersService.count() }} teachers
+    </div>
+  </div>
+
+  @if (teachersService.loading()) {
+    <app-loading-spinner message="Loading teachers..."></app-loading-spinner>
+  } @else if (filteredTeachers().length === 0) {
+    <app-empty-state
+      title="No teachers found"
+      [message]="searchQuery() || statusFilter() !== 'all' ? 'No teachers match your search or filter.' : 'Get started by adding your first faculty member.'"
+    ></app-empty-state>
+  } @else {
+    <!-- Desktop Table View -->
+    <div class="table-container desktop-view">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Employee Code</th>
+            <th>Faculty Name</th>
+            <th>Phone</th>
+            <th>Qualification</th>
+            <th>Joining Date</th>
+            <th>Status</th>
+            <th class="text-right">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (item of filteredTeachers(); track item.id) {
+            <tr>
+              <td>
+                <span class="code-badge">{{ item.employee_code }}</span>
+              </td>
+              <td class="font-bold text-main">{{ item.full_name }}</td>
+              <td>{{ item.phone || '—' }}</td>
+              <td>{{ item.qualification || '—' }}</td>
+              <td>{{ item.joining_date }}</td>
+              <td>
+                <span
+                  class="status-badge"
+                  [class.badge-active]="item.is_active"
+                  [class.badge-inactive]="!item.is_active"
+                >
+                  {{ item.is_active ? 'Active' : 'Inactive' }}
+                </span>
+              </td>
+              <td class="text-right">
+                <div class="actions-group">
+                  <button
+                    type="button"
+                    class="btn-icon"
+                    title="Edit Teacher"
+                    (click)="openEditDialog(item)"
+                  >
+                    Edit
+                  </button>
+                  <button
+                    type="button"
+                    class="btn-icon"
+                    title="Reset Password"
+                    (click)="openResetPasswordDialog(item)"
+                  >
+                    Password
+                  </button>
+                  @if (item.is_active) {
+                    <button
+                      type="button"
+                      class="btn-icon text-danger"
+                      title="Deactivate Account"
+                      (click)="openStatusConfirmDialog(item, false)"
+                    >
+                      Deactivate
+                    </button>
+                  } @else {
+                    <button
+                      type="button"
+                      class="btn-icon text-success"
+                      title="Activate Account"
+                      (click)="openStatusConfirmDialog(item, true)"
+                    >
+                      Activate
+                    </button>
+                  }
+                </div>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Mobile Cards View -->
+    <div class="mobile-cards-view">
+      @for (item of filteredTeachers(); track item.id) {
+        <div class="card-item">
+          <div class="card-header">
+            <div>
+              <h3 class="card-title">{{ item.full_name }}</h3>
+              <span class="code-badge">{{ item.employee_code }}</span>
+            </div>
+            <span
+              class="status-badge"
+              [class.badge-active]="item.is_active"
+              [class.badge-inactive]="!item.is_active"
+            >
+              {{ item.is_active ? 'Active' : 'Inactive' }}
+            </span>
+          </div>
+
+          <div class="card-details">
+            <div class="detail-row">
+              <span class="detail-label">Phone:</span>
+              <span class="detail-value">{{ item.phone || '—' }}</span>
+            </div>
+            <div class="detail-row">
+              <span class="detail-label">Qualification:</span>
+              <span class="detail-value">{{ item.qualification || '—' }}</span>
+            </div>
+            <div class="detail-row">
+              <span class="detail-label">Joining Date:</span>
+              <span class="detail-value">{{ item.joining_date }}</span>
+            </div>
+          </div>
+
+          <div class="card-actions">
+            <button
+              type="button"
+              class="btn btn-secondary btn-sm flex-1"
+              (click)="openEditDialog(item)"
+            >
+              Edit
+            </button>
+            <button
+              type="button"
+              class="btn btn-secondary btn-sm flex-1"
+              (click)="openResetPasswordDialog(item)"
+            >
+              Password
+            </button>
+            @if (item.is_active) {
+              <button
+                type="button"
+                class="btn btn-secondary btn-sm text-danger"
+                (click)="openStatusConfirmDialog(item, false)"
+              >
+                Deactivate
+              </button>
+            } @else {
+              <button
+                type="button"
+                class="btn btn-secondary btn-sm text-success"
+                (click)="openStatusConfirmDialog(item, true)"
+              >
+                Activate
+              </button>
+            }
+          </div>
+        </div>
+      }
+    </div>
+  }
+</div>
+
+<!-- ========================================================================= -->
+<!-- Add Teacher Dialog -->
+<!-- ========================================================================= -->
+<app-dialog
+  [isOpen]="isCreateDialogOpen()"
+  title="Add New Faculty Teacher"
+  size="md"
+  (closed)="closeCreateDialog()"
+>
+  <form
+    [formGroup]="createForm"
+    (ngSubmit)="onCreateSubmit()"
+    id="createTeacherForm"
+    class="dialog-form"
+  >
+    <div class="form-group">
+      <label for="teachName" class="form-label">Full Name *</label>
+      <input
+        id="teachName"
+        type="text"
+        class="form-control"
+        placeholder="e.g. Dr. Sarah Jenkins"
+        formControlName="full_name"
+        [class.is-invalid]="createForm.controls.full_name.invalid && createForm.controls.full_name.touched"
+      />
+      @if (createForm.controls.full_name.invalid && createForm.controls.full_name.touched) {
+        <span class="form-error">Full name is required (max 100 characters).</span>
+      }
+    </div>
+
+    <div class="form-row-2">
+      <div class="form-group">
+        <label for="teachEmail" class="form-label">Email (Login ID) *</label>
+        <input
+          id="teachEmail"
+          type="email"
+          class="form-control"
+          placeholder="e.g. s.jenkins@school.edu"
+          formControlName="email"
+          [class.is-invalid]="createForm.controls.email.invalid && createForm.controls.email.touched"
+        />
+        @if (createForm.controls.email.invalid && createForm.controls.email.touched) {
+          <span class="form-error">Valid email address required for login.</span>
+        }
+      </div>
+
+      <div class="form-group">
+        <label for="teachEmpCode" class="form-label">Employee Code *</label>
+        <input
+          id="teachEmpCode"
+          type="text"
+          class="form-control uppercase-input"
+          placeholder="e.g. TCH-104"
+          formControlName="employee_code"
+          [class.is-invalid]="createForm.controls.employee_code.invalid && createForm.controls.employee_code.touched"
+        />
+        @if (createForm.controls.employee_code.invalid && createForm.controls.employee_code.touched) {
+          <span class="form-error">Unique employee code is required.</span>
+        }
+      </div>
+    </div>
+
+    <!-- Password with Generate & Show/Hide -->
+    <div class="form-group">
+      <div class="password-label-row">
+        <label for="teachPass" class="form-label">Temporary Password *</label>
+        <button
+          type="button"
+          class="btn-inline-link"
+          (click)="generateRandomPassword(false)"
+        >
+          &#8635; Generate Strong Password
+        </button>
+      </div>
+      <div class="input-with-button">
+        <input
+          id="teachPass"
+          [type]="showCreatePassword() ? 'text' : 'password'"
+          class="form-control"
+          placeholder="Min. 8 characters"
+          formControlName="password"
+          [class.is-invalid]="createForm.controls.password.invalid && createForm.controls.password.touched"
+        />
+        <button
+          type="button"
+          class="btn-toggle-eye"
+          (click)="showCreatePassword.set(!showCreatePassword())"
+          [title]="showCreatePassword() ? 'Hide password' : 'Show password'"
+        >
+          {{ showCreatePassword() ? 'Hide' : 'Show' }}
+        </button>
+      </div>
+      @if (createForm.controls.password.invalid && createForm.controls.password.touched) {
+        <span class="form-error">Password must be at least 8 characters.</span>
+      }
+    </div>
+
+    <div class="form-row-2">
+      <div class="form-group">
+        <label for="teachPhone" class="form-label">Phone Number</label>
+        <input
+          id="teachPhone"
+          type="tel"
+          class="form-control"
+          placeholder="e.g. +1 555-0192"
+          formControlName="phone"
+        />
+      </div>
+
+      <div class="form-group">
+        <label for="teachJoining" class="form-label">Joining Date *</label>
+        <input
+          id="teachJoining"
+          type="date"
+          class="form-control"
+          formControlName="joining_date"
+          [class.is-invalid]="createForm.controls.joining_date.invalid && createForm.controls.joining_date.touched"
+        />
+        @if (createForm.controls.joining_date.invalid && createForm.controls.joining_date.touched) {
+          <span class="form-error">Joining date is required.</span>
+        }
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label for="teachQual" class="form-label">Qualification / Degree</label>
+      <input
+        id="teachQual"
+        type="text"
+        class="form-control"
+        placeholder="e.g. M.Sc. Mathematics, B.Ed"
+        formControlName="qualification"
+      />
+    </div>
+  </form>
+
+  <div dialog-actions class="dialog-action-buttons">
+    <button
+      type="button"
+      class="btn btn-secondary"
+      [disabled]="teachersService.saving()"
+      (click)="closeCreateDialog()"
+    >
+      Cancel
+    </button>
+    <button
+      type="submit"
+      form="createTeacherForm"
+      class="btn btn-primary"
+      [disabled]="teachersService.saving()"
+    >
+      @if (teachersService.saving()) {
+        <span class="btn-spinner" aria-hidden="true"></span>
+      }
+      <span>Create Teacher Account</span>
+    </button>
+  </div>
+</app-dialog>
+
+<!-- ========================================================================= -->
+<!-- Edit Teacher Dialog -->
+<!-- ========================================================================= -->
+<app-dialog
+  [isOpen]="isEditDialogOpen()"
+  [title]="'Edit Teacher - ' + (selectedTeacher()?.employee_code || '')"
+  size="md"
+  (closed)="closeEditDialog()"
+>
+  <form
+    [formGroup]="editForm"
+    (ngSubmit)="onEditSubmit()"
+    id="editTeacherForm"
+    class="dialog-form"
+  >
+    <div class="form-group">
+      <label for="editTeachName" class="form-label">Full Name *</label>
+      <input
+        id="editTeachName"
+        type="text"
+        class="form-control"
+        formControlName="full_name"
+        [class.is-invalid]="editForm.controls.full_name.invalid && editForm.controls.full_name.touched"
+      />
+      @if (editForm.controls.full_name.invalid && editForm.controls.full_name.touched) {
+        <span class="form-error">Full name is required.</span>
+      }
+    </div>
+
+    <div class="form-row-2">
+      <div class="form-group">
+        <label for="editTeachPhone" class="form-label">Phone Number</label>
+        <input
+          id="editTeachPhone"
+          type="tel"
+          class="form-control"
+          formControlName="phone"
+        />
+      </div>
+
+      <div class="form-group">
+        <label for="editTeachJoining" class="form-label">Joining Date *</label>
+        <input
+          id="editTeachJoining"
+          type="date"
+          class="form-control"
+          formControlName="joining_date"
+          [class.is-invalid]="editForm.controls.joining_date.invalid && editForm.controls.joining_date.touched"
+        />
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label for="editTeachQual" class="form-label">Qualification / Degree</label>
+      <input
+        id="editTeachQual"
+        type="text"
+        class="form-control"
+        formControlName="qualification"
+      />
+    </div>
+  </form>
+
+  <div dialog-actions class="dialog-action-buttons">
+    <button
+      type="button"
+      class="btn btn-secondary"
+      [disabled]="teachersService.saving()"
+      (click)="closeEditDialog()"
+    >
+      Cancel
+    </button>
+    <button
+      type="submit"
+      form="editTeacherForm"
+      class="btn btn-primary"
+      [disabled]="teachersService.saving()"
+    >
+      @if (teachersService.saving()) {
+        <span class="btn-spinner" aria-hidden="true"></span>
+      }
+      <span>Save Changes</span>
+    </button>
+  </div>
+</app-dialog>
+
+<!-- ========================================================================= -->
+<!-- Reset Password Dialog -->
+<!-- ========================================================================= -->
+<app-dialog
+  [isOpen]="isResetPasswordOpen()"
+  [title]="'Reset Password: ' + (selectedTeacher()?.full_name || '')"
+  size="sm"
+  (closed)="closeResetPasswordDialog()"
+>
+  <div class="dialog-form">
+    <p class="dialog-instruction">
+      Set a new temporary password for this teacher. They will need this password to log in.
+    </p>
+
+    <div class="form-group">
+      <div class="password-label-row">
+        <label for="resetPassInput" class="form-label">New Password *</label>
+        <button
+          type="button"
+          class="btn-inline-link"
+          (click)="generateRandomPassword(true)"
+        >
+          &#8635; Generate Strong Password
+        </button>
+      </div>
+
+      <div class="input-with-button">
+        <input
+          id="resetPassInput"
+          [type]="showResetPassword() ? 'text' : 'password'"
+          class="form-control"
+          placeholder="Minimum 8 characters"
+          [formControl]="resetPasswordControl"
+          [class.is-invalid]="resetPasswordControl.invalid && resetPasswordControl.touched"
+        />
+        <button
+          type="button"
+          class="btn-toggle-eye"
+          (click)="showResetPassword.set(!showResetPassword())"
+        >
+          {{ showResetPassword() ? 'Hide' : 'Show' }}
+        </button>
+      </div>
+      @if (resetPasswordControl.invalid && resetPasswordControl.touched) {
+        <span class="form-error">Password must be at least 8 characters.</span>
+      }
+    </div>
+  </div>
+
+  <div dialog-actions class="dialog-action-buttons">
+    <button
+      type="button"
+      class="btn btn-secondary"
+      [disabled]="teachersService.saving()"
+      (click)="closeResetPasswordDialog()"
+    >
+      Cancel
+    </button>
+    <button
+      type="button"
+      class="btn btn-primary"
+      [disabled]="teachersService.saving()"
+      (click)="onResetPasswordSubmit()"
+    >
+      @if (teachersService.saving()) {
+        <span class="btn-spinner" aria-hidden="true"></span>
+      }
+      <span>Update Password</span>
+    </button>
+  </div>
+</app-dialog>
+
+<!-- ========================================================================= -->
+<!-- Deactivate / Activate Confirm Dialog -->
+<!-- ========================================================================= -->
+<app-confirm-dialog
+  [isOpen]="isStatusConfirmOpen()"
+  [title]="targetStatusAction() ? 'Activate Teacher Account' : 'Deactivate Teacher Account'"
+  [message]="targetStatusAction() 
+    ? 'Are you sure you want to activate ' + (selectedTeacher()?.full_name || 'this teacher') + '? They will regain portal login access.'
+    : 'Are you sure you want to deactivate ' + (selectedTeacher()?.full_name || 'this teacher') + '? They will be logged out and cannot sign in until reactivated.'"
+  [confirmText]="targetStatusAction() ? 'Activate Account' : 'Deactivate Account'"
+  [isDestructive]="!targetStatusAction()"
+  [isProcessing]="teachersService.saving()"
+  (confirmed)="onConfirmStatusChange()"
+  (cancelled)="closeStatusConfirmDialog()"
+></app-confirm-dialog>
+
+<!-- ========================================================================= -->
+<!-- Credentials Reveal Dialog (Shown Once) -->
+<!-- ========================================================================= -->
+<app-credentials-dialog
+  [isOpen]="isCredentialsOpen()"
+  [credentials]="newlyCreatedCredentials()"
+  (closed)="closeCredentialsDialog()"
+></app-credentials-dialog>

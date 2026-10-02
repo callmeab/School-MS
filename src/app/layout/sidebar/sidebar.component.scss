@@ -1,0 +1,114 @@
+.app-sidebar {
+  width: var(--sidebar-width);
+  background-color: var(--sidebar-bg);
+  color: var(--sidebar-text);
+  height: calc(100vh - var(--navbar-height));
+  position: sticky;
+  top: var(--navbar-height);
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+  transition: transform var(--transition-normal);
+  z-index: 90;
+  overflow-y: auto;
+}
+
+.sidebar-header {
+  display: none;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 1.25rem;
+  border-bottom: 1px solid var(--sidebar-hover-bg);
+
+  .sidebar-title {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--text-inverse);
+  }
+
+  .sidebar-close-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    background: transparent;
+    border: none;
+    color: var(--sidebar-text);
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+
+    &:hover {
+      background-color: var(--sidebar-hover-bg);
+      color: var(--text-inverse);
+    }
+  }
+}
+
+.sidebar-nav {
+  padding: 0.75rem 0.5rem;
+
+  ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+}
+
+.nav-link {
+  display: flex;
+  align-items: center;
+  gap: 0.875rem;
+  min-height: 46px; /* Large touch target */
+  padding: 0.65rem 1rem;
+  color: var(--sidebar-text);
+  text-decoration: none;
+  font-size: 0.95rem;
+  font-weight: 500;
+  border-radius: var(--radius-md);
+  transition: all var(--transition-normal);
+
+  &:hover {
+    background-color: var(--sidebar-hover-bg);
+    color: var(--sidebar-hover-text);
+  }
+
+  &.active {
+    background-color: var(--sidebar-active-bg);
+    color: var(--sidebar-active-text);
+    font-weight: 600;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+  }
+}
+
+.nav-label {
+  flex: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Mobile Off-Canvas Sidebar (<768px) */
+@media (max-width: 767px) {
+  .app-sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    height: 100vh;
+    z-index: 150;
+    transform: translateX(-100%);
+    box-shadow: var(--shadow-lg);
+
+    &.sidebar-open {
+      transform: translateX(0);
+    }
+  }
+
+  .sidebar-header {
+    display: flex;
+  }
+}

@@ -1,0 +1,174 @@
+<div class="feature-container">
+  <app-page-header
+    title="Subjects & Curriculum"
+    subtitle="Manage course subjects and curriculum codes"
+  >
+    <div actions>
+      <button
+        type="button"
+        class="btn btn-primary"
+        (click)="openAddDialog()"
+      >
+        <app-icon name="subjects" [size]="18" />
+        <span>Add Subject</span>
+      </button>
+    </div>
+  </app-page-header>
+
+  <!-- Filter & Search Bar -->
+  <div class="filter-card">
+    <div class="search-input-wrapper">
+      <input
+        type="search"
+        class="form-control"
+        placeholder="Search subjects by name or code..."
+        [value]="searchTerm()"
+        (input)="onSearchChange($event)"
+      />
+    </div>
+    <div class="result-counter">
+      Showing <strong>{{ filteredSubjects().length }}</strong> subjects
+    </div>
+  </div>
+
+  <!-- Loading State -->
+  @if (subjectsService.loading()) {
+    <app-loading-spinner message="Loading subjects catalog..." />
+  } @else if (filteredSubjects().length === 0) {
+    <!-- Empty State -->
+    <app-empty-state
+      [title]="searchTerm() ? 'No matching subjects found' : 'No subjects registered yet'"
+      [message]="searchTerm() ? 'Try adjusting your search query.' : 'Click Add Subject above to create your school’s first curriculum subject.'"
+    >
+      @if (!searchTerm()) {
+        <button type="button" class="btn btn-primary" (click)="openAddDialog()">
+          Add Subject Now
+        </button>
+      }
+    </app-empty-state>
+  } @else {
+    <!-- Subjects List / Table -->
+    <div class="table-container">
+      <table class="data-table" role="table">
+        <thead>
+          <tr>
+            <th scope="col">Subject Name</th>
+            <th scope="col">Code</th>
+            <th scope="col" class="text-right">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (subject of filteredSubjects(); track subject.id) {
+            <tr>
+              <td class="font-medium text-main">
+                {{ subject.name }}
+              </td>
+              <td>
+                <span class="code-badge">{{ subject.code }}</span>
+              </td>
+              <td class="text-right">
+                <div class="actions-group">
+                  <button
+                    type="button"
+                    class="btn-icon"
+                    (click)="openEditDialog(subject)"
+                    title="Edit subject"
+                    aria-label="Edit subject"
+                  >
+                    Edit
+                  </button>
+                  <button
+                    type="button"
+                    class="btn-icon text-danger"
+                    (click)="confirmDelete(subject)"
+                    title="Delete subject"
+                    aria-label="Delete subject"
+                  >
+                    Delete
+                  </button>
+                </div>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+</div>
+
+<!-- Add / Edit Subject Dialog -->
+<app-dialog
+  [isOpen]="isFormDialogOpen()"
+  [title]="editingSubject() ? 'Edit Subject' : 'Add New Subject'"
+  size="sm"
+  [closeOnBackdrop]="!subjectsService.saving()"
+  (closed)="closeFormDialog()"
+>
+  <form [formGroup]="subjectForm" (ngSubmit)="saveSubject()" novalidate class="dialog-form">
+    <div class="form-group">
+      <label for="subName" class="form-label">Subject Name *</label>
+      <input
+        id="subName"
+        type="text"
+        class="form-control"
+        formControlName="name"
+        placeholder="e.g. Mathematics, English Language"
+        [class.is-invalid]="subjectForm.get('name')?.invalid && subjectForm.get('name')?.touched"
+      />
+      @if (subjectForm.get('name')?.invalid && subjectForm.get('name')?.touched) {
+        <div class="form-error">Subject name is required (min 2 characters).</div>
+      }
+    </div>
+
+    <div class="form-group">
+      <label for="subCode" class="form-label">Subject Code * (Unique)</label>
+      <input
+        id="subCode"
+        type="text"
+        class="form-control uppercase-input"
+        formControlName="code"
+        (input)="onCodeInput($event)"
+        placeholder="e.g. MATH101, ENG01"
+        [class.is-invalid]="subjectForm.get('code')?.invalid && subjectForm.get('code')?.touched"
+      />
+      @if (subjectForm.get('code')?.invalid && subjectForm.get('code')?.touched) {
+        <div class="form-error">Unique code is required (e.g. MATH101).</div>
+      }
+    </div>
+
+    <div dialog-actions class="dialog-action-buttons">
+      <button
+        type="button"
+        class="btn btn-secondary"
+        (click)="closeFormDialog()"
+        [disabled]="subjectsService.saving()"
+      >
+        Cancel
+      </button>
+      <button
+        type="submit"
+        class="btn btn-primary"
+        [disabled]="subjectForm.invalid || subjectsService.saving()"
+      >
+        @if (subjectsService.saving()) {
+          <span class="btn-spinner" aria-hidden="true"></span>
+          Saving...
+        } @else {
+          {{ editingSubject() ? 'Save Changes' : 'Create Subject' }}
+        }
+      </button>
+    </div>
+  </form>
+</app-dialog>
+
+<!-- Delete Confirmation Dialog -->
+<app-confirm-dialog
+  [isOpen]="isDeleteDialogOpen()"
+  title="Delete Subject"
+  [message]="'Are you sure you want to delete ' + (targetDeleteSubject()?.name ?? 'this subject') + ' (' + (targetDeleteSubject()?.code ?? '') + ')? This action cannot be undone.'"
+  confirmText="Delete Subject"
+  [isDestructive]="true"
+  [isProcessing]="subjectsService.saving()"
+  (confirmed)="executeDelete()"
+  (cancelled)="cancelDelete()"
+/>

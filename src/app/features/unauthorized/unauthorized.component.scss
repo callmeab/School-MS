@@ -1,0 +1,64 @@
+.unauthorized-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 80vh;
+  padding: 1.5rem;
+}
+
+.unauthorized-card {
+  background-color: #ffffff;
+  border: 1px solid #fed7aa;
+  border-radius: 12px;
+  padding: 3rem 2rem;
+  max-width: 480px;
+  width: 100%;
+  text-align: center;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+}
+
+.icon-badge {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+}
+
+h1 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #9a3412;
+  margin: 0 0 0.5rem;
+}
+
+h2 {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: #1e293b;
+  margin: 0 0 1rem;
+}
+
+p {
+  color: #64748b;
+  font-size: 0.95rem;
+  margin-bottom: 2rem;
+  line-height: 1.5;
+}
+
+.btn {
+  display: inline-block;
+  padding: 0.75rem 1.75rem;
+  font-size: 0.95rem;
+  font-weight: 600;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+}
+
+.btn-primary {
+  background-color: #2563eb;
+  color: #ffffff;
+
+  &:hover {
+    background-color: #1d4ed8;
+  }
+}

@@ -1,0 +1,272 @@
+.filter-controls {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1rem;
+  flex: 1;
+}
+
+.search-input-wrapper {
+  flex: 1;
+  min-width: 240px;
+  max-width: 380px;
+}
+
+.year-filter-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.filter-label {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
+.result-counter {
+  font-size: 0.9rem;
+  color: var(--text-muted);
+}
+
+.section-badge {
+  display: inline-block;
+  font-size: 0.85rem;
+  font-weight: 600;
+  padding: 0.2rem 0.6rem;
+  border-radius: var(--radius-sm);
+  background-color: #f1f5f9;
+  color: #334155;
+  border: 1px solid #cbd5e1;
+}
+
+.year-badge {
+  display: inline-block;
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--text-muted);
+}
+
+.badge-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.35rem 0.75rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  border-radius: 9999px;
+  background-color: var(--primary-light);
+  color: var(--primary-color);
+  border: 1px solid var(--primary-border);
+  cursor: pointer;
+  transition: all var(--transition-normal);
+
+  &:hover {
+    background-color: #dbeafe;
+    transform: translateY(-1px);
+  }
+}
+
+/* Mobile Cards View */
+.mobile-cards-view {
+  display: none;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.class-card {
+  background-color: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  padding: 1.25rem;
+  box-shadow: var(--shadow-sm);
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+
+  .card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    .card-title {
+      margin: 0;
+      font-size: 1.15rem;
+      font-weight: 700;
+      color: var(--text-main);
+    }
+  }
+
+  .card-details {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    font-size: 0.9rem;
+
+    .detail-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .detail-label {
+      color: var(--text-muted);
+      font-weight: 500;
+    }
+
+    .detail-value {
+      font-weight: 600;
+      color: var(--text-main);
+    }
+  }
+
+  .card-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding-top: 0.5rem;
+    border-top: 1px solid var(--border-color);
+  }
+}
+
+/* Manage Subjects Modal Styling */
+.manage-subjects-container {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.add-subject-panel {
+  background-color: var(--bg-muted);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+
+  .add-subject-row {
+    display: flex;
+    gap: 0.75rem;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+}
+
+.section-heading {
+  margin: 0 0 0.75rem;
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--text-main);
+}
+
+.subjects-chip-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.subject-chip {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.75rem 1rem;
+  background-color: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+
+  .subject-chip-info {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+
+    .chip-title {
+      font-weight: 600;
+      color: var(--text-main);
+    }
+
+    .chip-code {
+      font-family: monospace;
+      font-size: 0.8rem;
+      background-color: var(--bg-muted);
+      padding: 0.15rem 0.4rem;
+      border-radius: 4px;
+      color: var(--text-muted);
+    }
+  }
+
+  .subject-teacher-assignment {
+    flex: 1;
+    max-width: 240px;
+    margin: 0 0.75rem;
+
+    .form-select-sm {
+      height: 36px;
+      font-size: 0.85rem;
+      padding: 0 0.5rem;
+    }
+
+    .assigned-teacher-label {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+
+      strong {
+        color: var(--text-main);
+      }
+    }
+  }
+
+  .chip-remove-btn {
+    width: 28px;
+    height: 28px;
+    background: transparent;
+    border: none;
+    border-radius: 50%;
+    color: #dc2626;
+    font-size: 1.25rem;
+    line-height: 1;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background-color var(--transition-normal);
+
+    &:hover {
+      background-color: #fee2e2;
+    }
+  }
+}
+
+.empty-hint {
+  font-size: 0.9rem;
+  color: var(--text-muted);
+  font-style: italic;
+  margin: 0.5rem 0;
+}
+
+.flex-1 {
+  flex: 1;
+}
+
+@media (max-width: 767px) {
+  .desktop-view {
+    display: none;
+  }
+
+  .mobile-cards-view {
+    display: flex;
+  }
+
+  .filter-card {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .search-input-wrapper {
+    max-width: 100%;
+  }
+}

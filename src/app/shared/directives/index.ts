@@ -1,0 +1,4 @@
+/**
+ * Shared directives placeholder.
+ */
+export {};

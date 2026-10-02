@@ -1,0 +1,83 @@
+.my-attendance-container {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.month-group {
+  flex: 0 1 280px;
+}
+
+.month-display-hint {
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: var(--text-muted);
+  margin-left: 0.25rem;
+}
+
+.monthly-summary {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.summary-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.3rem 0.65rem;
+  border-radius: var(--radius-sm);
+  font-size: 0.85rem;
+  font-weight: 600;
+  border: 1px solid transparent;
+
+  .pill-value {
+    font-size: 1rem;
+    font-weight: 700;
+  }
+
+  &.pill-present {
+    background-color: #dcfce7;
+    color: #15803d;
+    border-color: #bbf7d0;
+  }
+
+  &.pill-absent {
+    background-color: #fee2e2;
+    color: #b91c1c;
+    border-color: #fecaca;
+  }
+
+  &.pill-late {
+    background-color: #fef3c7;
+    color: #b45309;
+    border-color: #fde68a;
+  }
+
+  &.pill-leave {
+    background-color: #dbeafe;
+    color: #1d4ed8;
+    border-color: #bfdbfe;
+  }
+
+  &.pill-total {
+    background-color: var(--bg-muted);
+    color: var(--text-main);
+    border-color: var(--border-color);
+  }
+}
+
+.col-date {
+  width: 250px;
+}
+
+.date-text {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--text-main);
+}
+
+.col-status {
+  text-align: left;
+}

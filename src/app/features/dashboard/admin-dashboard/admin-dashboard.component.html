@@ -1,0 +1,295 @@
+<div class="admin-dashboard">
+  <!-- ========================================================================= -->
+  <!-- Top Stat Cards                                                            -->
+  <!-- ========================================================================= -->
+  <section class="stat-cards-grid" aria-label="School overview statistics">
+    <!-- Active Students Card -->
+    <div class="stat-card">
+      <div class="stat-header">
+        <span class="stat-icon-wrapper student-icon-bg">🎓</span>
+        <span class="stat-title">Active Students</span>
+      </div>
+      <div class="stat-body">
+        @if (loadingStats()) {
+          <div class="stat-skeleton"></div>
+        } @else if (errorStats()) {
+          <div class="stat-error">
+            <span>Failed to load</span>
+            <button type="button" class="btn-retry" (click)="retryStats()">Retry</button>
+          </div>
+        } @else {
+          <span class="stat-value">{{ stats().activeStudents }}</span>
+          <span class="stat-hint">Enrolled & Active</span>
+        }
+      </div>
+    </div>
+
+    <!-- Active Teachers Card -->
+    <div class="stat-card">
+      <div class="stat-header">
+        <span class="stat-icon-wrapper teacher-icon-bg">👨‍🏫</span>
+        <span class="stat-title">Teaching Staff</span>
+      </div>
+      <div class="stat-body">
+        @if (loadingStats()) {
+          <div class="stat-skeleton"></div>
+        } @else if (errorStats()) {
+          <div class="stat-error">
+            <span>Failed to load</span>
+            <button type="button" class="btn-retry" (click)="retryStats()">Retry</button>
+          </div>
+        } @else {
+          <span class="stat-value">{{ stats().activeTeachers }}</span>
+          <span class="stat-hint">Active Faculty Members</span>
+        }
+      </div>
+    </div>
+
+    <!-- Total Classes Card -->
+    <div class="stat-card">
+      <div class="stat-header">
+        <span class="stat-icon-wrapper class-icon-bg">🏫</span>
+        <span class="stat-title">Registered Classes</span>
+      </div>
+      <div class="stat-body">
+        @if (loadingStats()) {
+          <div class="stat-skeleton"></div>
+        } @else if (errorStats()) {
+          <div class="stat-error">
+            <span>Failed to load</span>
+            <button type="button" class="btn-retry" (click)="retryStats()">Retry</button>
+          </div>
+        } @else {
+          <span class="stat-value">{{ stats().totalClasses }}</span>
+          <span class="stat-hint">Across All Sections</span>
+        }
+      </div>
+    </div>
+  </section>
+
+  <!-- ========================================================================= -->
+  <!-- Main Grid: Attendance & Schedule Operations                              -->
+  <!-- ========================================================================= -->
+  <div class="dashboard-grid">
+    <!-- Left Column: Student Attendance Overview & Missing Classes -->
+    <div class="dashboard-col">
+      <!-- Today's Student Attendance Card -->
+      <div class="dash-card">
+        <div class="dash-card-header">
+          <div class="header-left">
+            <h2 class="dash-card-title">Today's Student Attendance</h2>
+            <span class="dash-card-subtitle">Real-time attendance numbers across all classes</span>
+          </div>
+          @if (errorTodayAttendance()) {
+            <button type="button" class="btn-retry" (click)="retryAttendanceToday()">Retry</button>
+          }
+        </div>
+
+        <div class="dash-card-body">
+          @if (loadingTodayAttendance()) {
+            <app-loading-spinner message="Loading today's attendance summary..."></app-loading-spinner>
+          } @else if (errorTodayAttendance()) {
+            <div class="section-error-box">
+              <span>Could not load attendance summary.</span>
+              <button type="button" class="btn btn-secondary btn-sm" (click)="retryAttendanceToday()">Retry</button>
+            </div>
+          } @else {
+            <!-- Live Summary Badges -->
+            <div class="summary-pill-group">
+              <div class="summary-pill pill-present">
+                <span class="pill-label">Present:</span>
+                <span class="pill-value">{{ todayAttendance().present }}</span>
+              </div>
+              <div class="summary-pill pill-absent">
+                <span class="pill-label">Absent:</span>
+                <span class="pill-value">{{ todayAttendance().absent }}</span>
+              </div>
+              <div class="summary-pill pill-late">
+                <span class="pill-label">Late:</span>
+                <span class="pill-value">{{ todayAttendance().late }}</span>
+              </div>
+              <div class="summary-pill pill-leave">
+                <span class="pill-label">Leave:</span>
+                <span class="pill-value">{{ todayAttendance().on_leave }}</span>
+              </div>
+            </div>
+
+            <!-- Segmented CSS Progress Bar -->
+            @if (todayAttendance().total > 0) {
+              <div class="segmented-bar" aria-label="Attendance proportion bar">
+                <div
+                  class="seg-item seg-present"
+                  [style.width.%]="attendancePercentages().present"
+                  [title]="'Present: ' + attendancePercentages().present + '%'"
+                ></div>
+                <div
+                  class="seg-item seg-absent"
+                  [style.width.%]="attendancePercentages().absent"
+                  [title]="'Absent: ' + attendancePercentages().absent + '%'"
+                ></div>
+                <div
+                  class="seg-item seg-late"
+                  [style.width.%]="attendancePercentages().late"
+                  [title]="'Late: ' + attendancePercentages().late + '%'"
+                ></div>
+                <div
+                  class="seg-item seg-leave"
+                  [style.width.%]="attendancePercentages().leave"
+                  [title]="'Leave: ' + attendancePercentages().leave + '%'"
+                ></div>
+              </div>
+
+              <div class="bar-labels">
+                <span class="bar-legend legend-present">● {{ attendancePercentages().present }}% Present</span>
+                <span class="bar-legend legend-absent">● {{ attendancePercentages().absent }}% Absent</span>
+                <span class="bar-legend legend-late">● {{ attendancePercentages().late }}% Late</span>
+                <span class="bar-legend legend-leave">● {{ attendancePercentages().leave }}% Leave</span>
+              </div>
+            } @else {
+              <div class="empty-inline-notice">
+                <span>No student attendance has been recorded for today yet.</span>
+                <a routerLink="/attendance" class="btn btn-primary btn-sm">Mark Attendance Now</a>
+              </div>
+            }
+          }
+        </div>
+      </div>
+
+      <!-- Classes Not Marked Today Card -->
+      <div class="dash-card">
+        <div class="dash-card-header">
+          <div class="header-left">
+            <h2 class="dash-card-title">Attendance Pending Classes</h2>
+            <span class="dash-card-subtitle">Classes without attendance recorded for today</span>
+          </div>
+          @if (errorUnmarkedClasses()) {
+            <button type="button" class="btn-retry" (click)="retryUnmarkedClasses()">Retry</button>
+          }
+        </div>
+
+        <div class="dash-card-body">
+          @if (loadingUnmarkedClasses()) {
+            <app-loading-spinner message="Checking class attendance status..."></app-loading-spinner>
+          } @else if (errorUnmarkedClasses()) {
+            <div class="section-error-box">
+              <span>Failed to check class attendance status.</span>
+              <button type="button" class="btn btn-secondary btn-sm" (click)="retryUnmarkedClasses()">Retry</button>
+            </div>
+          } @else if (unmarkedClasses().length === 0) {
+            <div class="all-marked-box">
+              <span class="check-icon">&#10003;</span>
+              <strong>All classes have their attendance marked for today!</strong>
+            </div>
+          } @else {
+            <ul class="unmarked-class-list">
+              @for (c of unmarkedClasses(); track c.id) {
+                <li class="unmarked-class-item">
+                  <div class="class-info">
+                    <strong class="class-name-text">{{ c.name }} - Section {{ c.section }}</strong>
+                    <span class="class-year-text">Academic Year {{ c.academic_year }}</span>
+                  </div>
+                  <a
+                    routerLink="/attendance"
+                    class="btn btn-secondary btn-sm"
+                  >
+                    Mark Class
+                  </a>
+                </li>
+              }
+            </ul>
+          }
+        </div>
+      </div>
+    </div>
+
+    <!-- Right Column: Staff Attendance & Examination Schedules -->
+    <div class="dashboard-col">
+      <!-- Teachers Attendance Today Card -->
+      <div class="dash-card">
+        <div class="dash-card-header">
+          <div class="header-left">
+            <h2 class="dash-card-title">Faculty Attendance Today</h2>
+            <span class="dash-card-subtitle">Daily attendance status for teaching staff</span>
+          </div>
+        </div>
+
+        <div class="dash-card-body">
+          @if (loadingTeacherAttendanceToday()) {
+            <div class="stat-skeleton"></div>
+          } @else {
+            <div class="teacher-status-box">
+              <div class="status-indicator">
+                @if (teacherAttendanceMarkedToday()) {
+                  <span class="status-badge badge-ongoing">
+                    Attendance Recorded ({{ teacherAttendanceMarkedCount() }})
+                  </span>
+                } @else {
+                  <span class="status-badge badge-absent">
+                    Not Marked Yet
+                  </span>
+                }
+              </div>
+
+              <a
+                routerLink="/attendance/teachers"
+                class="btn btn-secondary btn-sm"
+              >
+                {{ teacherAttendanceMarkedToday() ? 'Review Staff Attendance' : 'Mark Staff Attendance' }}
+              </a>
+            </div>
+          }
+        </div>
+      </div>
+
+      <!-- Upcoming & Ongoing Exams Card -->
+      <div class="dash-card">
+        <div class="dash-card-header">
+          <div class="header-left">
+            <h2 class="dash-card-title">Upcoming & Ongoing Exams</h2>
+            <span class="dash-card-subtitle">Next scheduled examinations</span>
+          </div>
+          @if (errorUpcomingExams()) {
+            <button type="button" class="btn-retry" (click)="retryExams()">Retry</button>
+          }
+        </div>
+
+        <div class="dash-card-body">
+          @if (loadingUpcomingExams()) {
+            <app-loading-spinner message="Loading upcoming exams..."></app-loading-spinner>
+          } @else if (errorUpcomingExams()) {
+            <div class="section-error-box">
+              <span>Failed to load upcoming examinations.</span>
+              <button type="button" class="btn btn-secondary btn-sm" (click)="retryExams()">Retry</button>
+            </div>
+          } @else if (upcomingExams().length === 0) {
+            <div class="empty-inline-notice">
+              <span>No upcoming examinations scheduled.</span>
+              <a routerLink="/exams" class="btn btn-secondary btn-sm">Schedule Exam</a>
+            </div>
+          } @else {
+            <ul class="upcoming-exams-list">
+              @for (ex of upcomingExams(); track ex.id) {
+                <li class="upcoming-exam-item">
+                  <div class="exam-info">
+                    <strong class="exam-title-text">{{ ex.title }}</strong>
+                    <div class="exam-subtext">
+                      <span>{{ ex.class_name }} - {{ ex.class_section }}</span>
+                      <span>&bull;</span>
+                      <span>{{ formatDate(ex.start_date) }} to {{ formatDate(ex.end_date) }}</span>
+                    </div>
+                  </div>
+                  <a
+                    [routerLink]="['/exams', ex.id]"
+                    class="btn btn-secondary btn-sm"
+                  >
+                    View Timetable
+                  </a>
+                </li>
+              }
+            </ul>
+          }
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

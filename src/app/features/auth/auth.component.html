@@ -1,0 +1,146 @@
+<div class="auth-page">
+  <div class="auth-container">
+    <!-- Brand / Hero Showcase Panel -->
+    <div class="brand-panel">
+      <div class="brand-backdrop" aria-hidden="true">
+        <div class="glow-orb orb-1"></div>
+        <div class="glow-orb orb-2"></div>
+      </div>
+
+      <div class="brand-content">
+        <div class="institution-badge">
+          <div class="school-logo-badge" aria-hidden="true">
+            <svg viewBox="0 0 24 24" width="36" height="36" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M22 10v6M2 10l10-5 10 5-10 5z"></path>
+              <path d="M6 12v5c3 3 9 3 12 0v-5"></path>
+            </svg>
+          </div>
+          <span class="portal-pill">Campus Management System</span>
+        </div>
+
+        <h1 class="school-name">{{ schoolName }}</h1>
+        <p class="school-tagline">Academic & Administrative Information Management Portal</p>
+
+        <ul class="feature-list" role="list">
+          <li class="feature-item">
+            <span class="feature-icon" aria-hidden="true">&#10003;</span>
+            <span>Real-time Student & Faculty Attendance</span>
+          </li>
+          <li class="feature-item">
+            <span class="feature-icon" aria-hidden="true">&#10003;</span>
+            <span>Classes, Subjects & Schedule Allocation</span>
+          </li>
+          <li class="feature-item">
+            <span class="feature-icon" aria-hidden="true">&#10003;</span>
+            <span>Exams, Datesheets & Automated Reports</span>
+          </li>
+        </ul>
+
+        <div class="brand-footer">
+          <span class="campus-tag">&#128205; Jokalian Campus</span>
+          <span class="security-badge">&#128274; RLS Protected</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Sign In Form Panel -->
+    <div class="form-panel">
+      <!-- Mobile-only School Header Banner -->
+      <div class="mobile-school-header">
+        <div class="mobile-logo-circle" aria-hidden="true">
+          <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M22 10v6M2 10l10-5 10 5-10 5z"></path>
+            <path d="M6 12v5c3 3 9 3 12 0v-5"></path>
+          </svg>
+        </div>
+        <h2 class="mobile-school-title">{{ schoolName }}</h2>
+        <span class="mobile-sub">Management Portal</span>
+      </div>
+
+      <div class="form-header">
+        <div class="welcome-pill">Staff & Faculty Portal</div>
+        <h2 class="form-title">Sign In</h2>
+        <p class="form-subtitle">Enter your official credentials to access your dashboard</p>
+      </div>
+
+      <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" novalidate class="auth-form">
+        <!-- Email Field -->
+        <div class="form-group">
+          <label for="email" class="form-label">Email Address</label>
+          <div class="input-with-icon">
+            <span class="field-icon" aria-hidden="true">&#9993;</span>
+            <input
+              id="email"
+              type="email"
+              formControlName="email"
+              autocomplete="email"
+              inputmode="email"
+              class="form-control"
+              [class.is-invalid]="loginForm.get('email')?.invalid && loginForm.get('email')?.touched"
+              placeholder="name@school.com"
+            />
+          </div>
+          @if (loginForm.get('email')?.invalid && loginForm.get('email')?.touched) {
+            <div class="invalid-feedback">
+              @if (loginForm.get('email')?.errors?.['required']) {
+                Email address is required.
+              } @else if (loginForm.get('email')?.errors?.['email']) {
+                Please enter a valid email address.
+              }
+            </div>
+          }
+        </div>
+
+        <!-- Password Field -->
+        <div class="form-group">
+          <label for="password" class="form-label">Password</label>
+          <div class="input-with-icon password-wrapper">
+            <span class="field-icon" aria-hidden="true">&#128274;</span>
+            <input
+              id="password"
+              [type]="showPassword() ? 'text' : 'password'"
+              formControlName="password"
+              autocomplete="current-password"
+              class="form-control"
+              [class.is-invalid]="loginForm.get('password')?.invalid && loginForm.get('password')?.touched"
+              placeholder="Enter your password"
+            />
+            <button
+              type="button"
+              class="password-toggle-btn"
+              (click)="togglePasswordVisibility()"
+              [attr.aria-label]="showPassword() ? 'Hide password' : 'Show password'"
+            >
+              {{ showPassword() ? 'Hide' : 'Show' }}
+            </button>
+          </div>
+          @if (loginForm.get('password')?.invalid && loginForm.get('password')?.touched) {
+            <div class="invalid-feedback">
+              Password is required.
+            </div>
+          }
+        </div>
+
+        <!-- Submit Button -->
+        <button
+          type="submit"
+          class="submit-btn"
+          [disabled]="isSubmitting() || loginForm.invalid"
+        >
+          @if (isSubmitting()) {
+            <span class="spinner" aria-hidden="true"></span>
+            <span>Signing in...</span>
+          } @else {
+            <span>Sign In to Dashboard &rarr;</span>
+          }
+        </button>
+
+        <!-- Help and Footer Notice -->
+        <div class="form-footer-notice">
+          <p class="role-note">Authorized for <strong>Administrator</strong> and <strong>Teacher</strong> accounts only.</p>
+          <p class="support-text">For account activation or password reset, contact school administration.</p>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

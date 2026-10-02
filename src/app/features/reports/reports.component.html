@@ -1,0 +1,675 @@
+<div class="reports-page">
+  <!-- ========================================================================= -->
+  <!-- SCREEN DISPLAY VIEW (Hidden in Print)                                     -->
+  <!-- ========================================================================= -->
+  <div class="screen-view no-print">
+    <app-page-header
+      title="Attendance Reports & Exports"
+      subtitle="Monthly attendance analytics, individual student history, and staff performance"
+    ></app-page-header>
+
+    <!-- Navigation Tabs -->
+    <nav class="report-tabs" aria-label="Reports sub-navigation">
+      <button
+        type="button"
+        class="tab-btn"
+        [class.active]="activeTab() === 'class'"
+        (click)="setTab('class')"
+      >
+        Class Monthly Attendance
+      </button>
+
+      <button
+        type="button"
+        class="tab-btn"
+        [class.active]="activeTab() === 'student'"
+        (click)="setTab('student')"
+      >
+        Student History
+      </button>
+
+      @if (authService.isAdmin()) {
+        <button
+          type="button"
+          class="tab-btn"
+          [class.active]="activeTab() === 'teacher'"
+          (click)="setTab('teacher')"
+        >
+          Teacher Monthly Attendance
+        </button>
+      }
+    </nav>
+
+    <!-- ===================================================================== -->
+    <!-- TAB A: Class Monthly Attendance Report                                -->
+    <!-- ===================================================================== -->
+    @if (activeTab() === 'class') {
+      <div class="tab-content">
+        <!-- Controls Bar -->
+        <div class="filter-card">
+          <div class="filter-controls">
+            <!-- Class Selector -->
+            <div class="form-group select-group">
+              <label for="reportClassSelect" class="form-label">Select Class</label>
+              <select
+                id="reportClassSelect"
+                class="form-select"
+                [ngModel]="selectedClassId()"
+                (ngModelChange)="onClassChange($event)"
+                [disabled]="loadingClasses() || loadingClass()"
+              >
+                <option value="" disabled>-- Choose a Class --</option>
+                @for (c of classes(); track c.id) {
+                  <option [value]="c.id">
+                    {{ c.name }} - Section {{ c.section }} ({{ c.academic_year }})
+                  </option>
+                }
+              </select>
+            </div>
+
+            <!-- Month Selector -->
+            <div class="form-group month-group">
+              <label for="reportMonthSelect" class="form-label">
+                Month
+                @if (formattedClassMonth()) {
+                  <span class="hint-text">({{ formattedClassMonth() }})</span>
+                }
+              </label>
+              <input
+                id="reportMonthSelect"
+                type="month"
+                class="form-control"
+                [ngModel]="selectedClassMonth()"
+                (ngModelChange)="onClassMonthChange($event)"
+                [max]="currentMonth"
+                [disabled]="loadingClass()"
+              />
+            </div>
+          </div>
+
+          <!-- Actions: Refresh, CSV, Print -->
+          <div class="report-actions">
+            <button
+              type="button"
+              class="btn btn-secondary btn-sm"
+              (click)="refreshClassReport()"
+              [disabled]="loadingClass() || !selectedClassId()"
+              title="Refresh attendance records"
+            >
+              &#8635; Refresh
+            </button>
+            <button
+              type="button"
+              class="btn btn-secondary btn-sm"
+              (click)="exportClassCsv()"
+              [disabled]="loadingClass() || classRows().length === 0"
+              title="Download CSV for Microsoft Excel"
+            >
+              Download CSV
+            </button>
+            <button
+              type="button"
+              class="btn btn-primary btn-sm"
+              (click)="printReport()"
+              [disabled]="loadingClass() || classRows().length === 0"
+              title="Print official report"
+            >
+              Print Report
+            </button>
+          </div>
+        </div>
+
+        <!-- Formula Explanation Notice -->
+        <div class="formula-notice">
+          <span class="info-icon">&#9432;</span>
+          <span><strong>Formula:</strong> Attendance Percentage = (Present + Late) &divide; Total Marked Days &times; 100. Students below 75% are marked with a Low badge.</span>
+        </div>
+
+        <!-- Table / Content -->
+        @if (loadingClass()) {
+          <app-loading-spinner message="Calculating class monthly attendance..."></app-loading-spinner>
+        } @else if (!selectedClassId()) {
+          <app-empty-state
+            icon="classes"
+            title="Select a Class"
+            message="Please select a class above to view the monthly attendance report."
+          ></app-empty-state>
+        } @else if (classRows().length === 0) {
+          <app-empty-state
+            icon="attendance"
+            title="No Students Found"
+            message="No active students found in this class."
+          ></app-empty-state>
+        } @else {
+          <div class="table-container">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th class="col-roll">Roll No</th>
+                  <th class="col-name">Student Name</th>
+                  <th class="text-center col-num">Present</th>
+                  <th class="text-center col-num">Absent</th>
+                  <th class="text-center col-num">Late</th>
+                  <th class="text-center col-num">Leave</th>
+                  <th class="text-center col-num">Total Days</th>
+                  <th class="text-center col-pct">Attendance %</th>
+                  <th class="text-center col-status">Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (r of classRows(); track r.student_id) {
+                  <tr>
+                    <td class="col-roll">
+                      <span class="roll-badge">{{ r.roll_no }}</span>
+                    </td>
+                    <td class="col-name">
+                      <strong class="student-name">{{ r.full_name }}</strong>
+                    </td>
+                    <td class="text-center col-num">{{ r.present }}</td>
+                    <td class="text-center col-num">{{ r.absent }}</td>
+                    <td class="text-center col-num">{{ r.late }}</td>
+                    <td class="text-center col-num">{{ r.on_leave }}</td>
+                    <td class="text-center col-num">
+                      <strong>{{ r.total_days }}</strong>
+                    </td>
+                    <td class="text-center col-pct">
+                      @if (r.has_records) {
+                        <strong [class.text-danger]="r.is_low">{{ r.percentage }}%</strong>
+                      } @else {
+                        <span class="text-muted">No records</span>
+                      }
+                    </td>
+                    <td class="text-center col-status">
+                      @if (r.is_low) {
+                        <span class="status-badge badge-absent">Low (&lt;75%)</span>
+                      } @else if (r.has_records) {
+                        <span class="status-badge badge-present">Normal</span>
+                      } @else {
+                        <span class="status-badge badge-finished">No records</span>
+                      }
+                    </td>
+                  </tr>
+                }
+              </tbody>
+              <!-- Totals Row -->
+              <tfoot>
+                <tr class="totals-row">
+                  <td colspan="2">
+                    <strong>CLASS TOTALS / AVERAGE</strong>
+                  </td>
+                  <td class="text-center"><strong>{{ classTotals().present }}</strong></td>
+                  <td class="text-center"><strong>{{ classTotals().absent }}</strong></td>
+                  <td class="text-center"><strong>{{ classTotals().late }}</strong></td>
+                  <td class="text-center"><strong>{{ classTotals().on_leave }}</strong></td>
+                  <td class="text-center"><strong>{{ classTotals().total_days }}</strong></td>
+                  <td class="text-center">
+                    <strong class="overall-pct">{{ classTotals().percentage }}%</strong>
+                  </td>
+                  <td class="text-center">
+                    <span class="status-badge" [ngClass]="classTotals().percentage < 75 ? 'badge-absent' : 'badge-present'">
+                      {{ classTotals().percentage < 75 ? 'Low Average' : 'Healthy' }}
+                    </span>
+                  </td>
+                </tr>
+              </tfoot>
+            </table>
+          </div>
+        }
+      </div>
+    }
+
+    <!-- ===================================================================== -->
+    <!-- TAB B: Student History Report                                         -->
+    <!-- ===================================================================== -->
+    @if (activeTab() === 'student') {
+      <div class="tab-content">
+        <!-- Controls Bar -->
+        <div class="filter-card">
+          <div class="filter-controls">
+            <!-- Class Selector -->
+            <div class="form-group select-group">
+              <label for="historyClassSelect" class="form-label">Class</label>
+              <select
+                id="historyClassSelect"
+                class="form-select"
+                [ngModel]="selectedStudentClassId()"
+                (ngModelChange)="onStudentClassChange($event)"
+                [disabled]="loadingClasses()"
+              >
+                <option value="" disabled>-- Choose Class --</option>
+                @for (c of classes(); track c.id) {
+                  <option [value]="c.id">
+                    {{ c.name }} - Section {{ c.section }}
+                  </option>
+                }
+              </select>
+            </div>
+
+            <!-- Student Selector -->
+            <div class="form-group select-group">
+              <label for="historyStudentSelect" class="form-label">Student</label>
+              <select
+                id="historyStudentSelect"
+                class="form-select"
+                [ngModel]="selectedStudentId()"
+                (ngModelChange)="onStudentSelect($event)"
+                [disabled]="classStudents().length === 0"
+              >
+                <option value="" disabled>-- Choose Student --</option>
+                @for (s of classStudents(); track s.id) {
+                  <option [value]="s.id">
+                    Roll #{{ s.roll_no }} - {{ s.full_name }}
+                  </option>
+                }
+              </select>
+            </div>
+
+            <!-- Month Selector -->
+            <div class="form-group month-group">
+              <label for="historyMonthSelect" class="form-label">
+                Month
+                @if (formattedStudentMonth()) {
+                  <span class="hint-text">({{ formattedStudentMonth() }})</span>
+                }
+              </label>
+              <input
+                id="historyMonthSelect"
+                type="month"
+                class="form-control"
+                [ngModel]="selectedStudentMonth()"
+                (ngModelChange)="onStudentMonthChange($event)"
+                [max]="currentMonth"
+                [disabled]="loadingStudent()"
+              />
+            </div>
+          </div>
+
+          <!-- Actions -->
+          <div class="report-actions">
+            <button
+              type="button"
+              class="btn btn-secondary btn-sm"
+              (click)="refreshStudentHistory()"
+              [disabled]="loadingStudent() || !selectedStudentId()"
+            >
+              &#8635; Refresh
+            </button>
+            <button
+              type="button"
+              class="btn btn-secondary btn-sm"
+              (click)="exportStudentHistoryCsv()"
+              [disabled]="loadingStudent() || studentDays().length === 0"
+            >
+              Download CSV
+            </button>
+            <button
+              type="button"
+              class="btn btn-primary btn-sm"
+              (click)="printReport()"
+              [disabled]="loadingStudent() || studentDays().length === 0"
+            >
+              Print Report
+            </button>
+          </div>
+        </div>
+
+        <!-- Student Summary Cards -->
+        @if (selectedStudentMeta()) {
+          <div class="student-meta-summary">
+            <div class="meta-profile">
+              <strong class="student-name-large">{{ selectedStudentMeta()!.full_name }}</strong>
+              <span class="roll-badge">Roll #{{ selectedStudentMeta()!.roll_no }}</span>
+            </div>
+
+            <div class="summary-pill-group">
+              <div class="summary-pill pill-present">
+                <span class="pill-label">Present:</span>
+                <span class="pill-value">{{ studentSummary().present }}</span>
+              </div>
+              <div class="summary-pill pill-absent">
+                <span class="pill-label">Absent:</span>
+                <span class="pill-value">{{ studentSummary().absent }}</span>
+              </div>
+              <div class="summary-pill pill-late">
+                <span class="pill-label">Late:</span>
+                <span class="pill-value">{{ studentSummary().late }}</span>
+              </div>
+              <div class="summary-pill pill-leave">
+                <span class="pill-label">Leave:</span>
+                <span class="pill-value">{{ studentSummary().leave }}</span>
+              </div>
+              <div class="summary-pill pill-total">
+                <span class="pill-label">Attendance:</span>
+                <span class="pill-value">{{ studentPercentage() }}%</span>
+              </div>
+            </div>
+          </div>
+        }
+
+        <!-- Day-by-Day Table -->
+        @if (loadingStudent()) {
+          <app-loading-spinner message="Loading student attendance history..."></app-loading-spinner>
+        } @else if (!selectedStudentId()) {
+          <app-empty-state
+            icon="students"
+            title="Select a Student"
+            message="Please choose a class and student above to review their attendance history."
+          ></app-empty-state>
+        } @else if (studentDays().length === 0) {
+          <app-empty-state
+            icon="attendance"
+            title="No Attendance Records"
+            message="No attendance recorded for this student in the selected month."
+          ></app-empty-state>
+        } @else {
+          <div class="table-container">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th class="col-date">Date</th>
+                  <th class="col-status">Recorded Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (d of studentDays(); track d.date) {
+                  <tr>
+                    <td class="col-date">
+                      <strong class="date-text">{{ formatDate(d.date) }}</strong>
+                    </td>
+                    <td class="col-status">
+                      <span class="status-badge" [ngClass]="'badge-' + d.status">
+                        {{ d.status }}
+                      </span>
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        }
+      </div>
+    }
+
+    <!-- ===================================================================== -->
+    <!-- TAB C: Teacher Monthly Attendance Report (Admin Only)                 -->
+    <!-- ===================================================================== -->
+    @if (activeTab() === 'teacher' && authService.isAdmin()) {
+      <div class="tab-content">
+        <!-- Controls Bar -->
+        <div class="filter-card">
+          <div class="filter-controls">
+            <div class="form-group month-group">
+              <label for="teacherReportMonth" class="form-label">
+                Month
+                @if (formattedTeacherMonth()) {
+                  <span class="hint-text">({{ formattedTeacherMonth() }})</span>
+                }
+              </label>
+              <input
+                id="teacherReportMonth"
+                type="month"
+                class="form-control"
+                [ngModel]="selectedTeacherMonth()"
+                (ngModelChange)="onTeacherMonthChange($event)"
+                [max]="currentMonth"
+                [disabled]="loadingTeacher()"
+              />
+            </div>
+          </div>
+
+          <div class="report-actions">
+            <button
+              type="button"
+              class="btn btn-secondary btn-sm"
+              (click)="refreshTeacherReport()"
+              [disabled]="loadingTeacher()"
+            >
+              &#8635; Refresh
+            </button>
+            <button
+              type="button"
+              class="btn btn-secondary btn-sm"
+              (click)="exportTeacherCsv()"
+              [disabled]="loadingTeacher() || teacherRows().length === 0"
+            >
+              Download CSV
+            </button>
+            <button
+              type="button"
+              class="btn btn-primary btn-sm"
+              (click)="printReport()"
+              [disabled]="loadingTeacher() || teacherRows().length === 0"
+            >
+              Print Report
+            </button>
+          </div>
+        </div>
+
+        <!-- Formula Notice -->
+        <div class="formula-notice">
+          <span class="info-icon">&#9432;</span>
+          <span><strong>Formula:</strong> Faculty Attendance Percentage = (Present + Late) &divide; Total Marked Days &times; 100.</span>
+        </div>
+
+        @if (loadingTeacher()) {
+          <app-loading-spinner message="Calculating faculty monthly attendance..."></app-loading-spinner>
+        } @else if (teacherRows().length === 0) {
+          <app-empty-state
+            icon="teachers"
+            title="No Teachers Found"
+            message="No active teachers found in the system."
+          ></app-empty-state>
+        } @else {
+          <div class="table-container">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th class="col-code">Emp Code</th>
+                  <th class="col-name">Teacher Name</th>
+                  <th class="text-center col-num">Present</th>
+                  <th class="text-center col-num">Absent</th>
+                  <th class="text-center col-num">Late</th>
+                  <th class="text-center col-num">Leave</th>
+                  <th class="text-center col-num">Total Days</th>
+                  <th class="text-center col-pct">Attendance %</th>
+                  <th class="text-center col-status">Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (t of teacherRows(); track t.teacher_id) {
+                  <tr>
+                    <td class="col-code">
+                      <span class="code-badge">{{ t.employee_code }}</span>
+                    </td>
+                    <td class="col-name">
+                      <strong class="teacher-name">{{ t.full_name }}</strong>
+                    </td>
+                    <td class="text-center col-num">{{ t.present }}</td>
+                    <td class="text-center col-num">{{ t.absent }}</td>
+                    <td class="text-center col-num">{{ t.late }}</td>
+                    <td class="text-center col-num">{{ t.on_leave }}</td>
+                    <td class="text-center col-num">
+                      <strong>{{ t.total_days }}</strong>
+                    </td>
+                    <td class="text-center col-pct">
+                      @if (t.has_records) {
+                        <strong [class.text-danger]="t.is_low">{{ t.percentage }}%</strong>
+                      } @else {
+                        <span class="text-muted">No records</span>
+                      }
+                    </td>
+                    <td class="text-center col-status">
+                      @if (t.is_low) {
+                        <span class="status-badge badge-absent">Low (&lt;75%)</span>
+                      } @else if (t.has_records) {
+                        <span class="status-badge badge-present">Normal</span>
+                      } @else {
+                        <span class="status-badge badge-finished">No records</span>
+                      }
+                    </td>
+                  </tr>
+                }
+              </tbody>
+              <!-- Totals Row -->
+              <tfoot>
+                <tr class="totals-row">
+                  <td colspan="2">
+                    <strong>FACULTY TOTALS / AVERAGE</strong>
+                  </td>
+                  <td class="text-center"><strong>{{ teacherTotals().present }}</strong></td>
+                  <td class="text-center"><strong>{{ teacherTotals().absent }}</strong></td>
+                  <td class="text-center"><strong>{{ teacherTotals().late }}</strong></td>
+                  <td class="text-center"><strong>{{ teacherTotals().on_leave }}</strong></td>
+                  <td class="text-center"><strong>{{ teacherTotals().total_days }}</strong></td>
+                  <td class="text-center">
+                    <strong class="overall-pct">{{ teacherTotals().percentage }}%</strong>
+                  </td>
+                  <td class="text-center">
+                    <span class="status-badge" [ngClass]="teacherTotals().percentage < 75 ? 'badge-absent' : 'badge-present'">
+                      {{ teacherTotals().percentage < 75 ? 'Low Average' : 'Healthy' }}
+                    </span>
+                  </td>
+                </tr>
+              </tfoot>
+            </table>
+          </div>
+        }
+      </div>
+    }
+  </div>
+
+  <!-- ========================================================================= -->
+  <!-- PRINT-ONLY VIEW (Only shown when printing report via @media print)        -->
+  <!-- ========================================================================= -->
+  <div class="print-only printable-report">
+    <div class="report-print-header">
+      <h1>{{ schoolName }}</h1>
+
+      @if (activeTab() === 'class') {
+        <h2>CLASS MONTHLY ATTENDANCE REPORT</h2>
+        <div class="print-meta-grid">
+          <div><strong>Class:</strong> {{ selectedClassMeta()?.name }} - Section {{ selectedClassMeta()?.section }} ({{ selectedClassMeta()?.academic_year }})</div>
+          <div><strong>Month:</strong> {{ formattedClassMonth() }}</div>
+        </div>
+
+        <table class="print-report-table">
+          <thead>
+            <tr>
+              <th>Roll No</th>
+              <th>Student Name</th>
+              <th>Present</th>
+              <th>Absent</th>
+              <th>Late</th>
+              <th>Leave</th>
+              <th>Total Days</th>
+              <th>Percentage</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (r of classRows(); track r.student_id) {
+              <tr>
+                <td>{{ r.roll_no }}</td>
+                <td>{{ r.full_name }}</td>
+                <td>{{ r.present }}</td>
+                <td>{{ r.absent }}</td>
+                <td>{{ r.late }}</td>
+                <td>{{ r.on_leave }}</td>
+                <td>{{ r.total_days }}</td>
+                <td>{{ r.has_records ? r.percentage + '%' : '—' }}</td>
+              </tr>
+            }
+          </tbody>
+          <tfoot>
+            <tr>
+              <th colspan="2">TOTALS / AVERAGE</th>
+              <th>{{ classTotals().present }}</th>
+              <th>{{ classTotals().absent }}</th>
+              <th>{{ classTotals().late }}</th>
+              <th>{{ classTotals().on_leave }}</th>
+              <th>{{ classTotals().total_days }}</th>
+              <th>{{ classTotals().percentage }}%</th>
+            </tr>
+          </tfoot>
+        </table>
+      }
+
+      @if (activeTab() === 'student') {
+        <h2>STUDENT ATTENDANCE HISTORY</h2>
+        <div class="print-meta-grid">
+          <div><strong>Student:</strong> {{ selectedStudentMeta()?.full_name }} (Roll #{{ selectedStudentMeta()?.roll_no }})</div>
+          <div><strong>Month:</strong> {{ formattedStudentMonth() }}</div>
+          <div><strong>Overall Attendance:</strong> {{ studentPercentage() }}%</div>
+        </div>
+
+        <table class="print-report-table">
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Recorded Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (d of studentDays(); track d.date) {
+              <tr>
+                <td>{{ formatDate(d.date) }}</td>
+                <td>{{ d.status.toUpperCase() }}</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      }
+
+      @if (activeTab() === 'teacher') {
+        <h2>FACULTY MONTHLY ATTENDANCE REPORT</h2>
+        <div class="print-meta-grid">
+          <div><strong>Month:</strong> {{ formattedTeacherMonth() }}</div>
+        </div>
+
+        <table class="print-report-table">
+          <thead>
+            <tr>
+              <th>Emp Code</th>
+              <th>Teacher Name</th>
+              <th>Present</th>
+              <th>Absent</th>
+              <th>Late</th>
+              <th>Leave</th>
+              <th>Total Days</th>
+              <th>Percentage</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (t of teacherRows(); track t.teacher_id) {
+              <tr>
+                <td>{{ t.employee_code }}</td>
+                <td>{{ t.full_name }}</td>
+                <td>{{ t.present }}</td>
+                <td>{{ t.absent }}</td>
+                <td>{{ t.late }}</td>
+                <td>{{ t.on_leave }}</td>
+                <td>{{ t.total_days }}</td>
+                <td>{{ t.has_records ? t.percentage + '%' : '—' }}</td>
+              </tr>
+            }
+          </tbody>
+          <tfoot>
+            <tr>
+              <th colspan="2">TOTALS / AVERAGE</th>
+              <th>{{ teacherTotals().present }}</th>
+              <th>{{ teacherTotals().absent }}</th>
+              <th>{{ teacherTotals().late }}</th>
+              <th>{{ teacherTotals().on_leave }}</th>
+              <th>{{ teacherTotals().total_days }}</th>
+              <th>{{ teacherTotals().percentage }}%</th>
+            </tr>
+          </tfoot>
+        </table>
+      }
+
+      <div class="print-report-footer">
+        <div>Date Generated: {{ formatDate(currentMonth + '-01') }}</div>
+        <div class="sign-box">Authorized Signature</div>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,113 @@
+.dialog-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(15, 23, 42, 0.6);
+  backdrop-filter: blur(2px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  z-index: 1000;
+  animation: overlayFadeIn 0.15s ease-out;
+}
+
+.dialog-box {
+  background-color: var(--bg-surface);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
+  border: 1px solid var(--border-color);
+  width: 100%;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  outline: none;
+  animation: modalScaleUp 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+
+  &.size-sm {
+    max-width: 420px;
+  }
+
+  &.size-md {
+    max-width: 540px;
+  }
+
+  &.size-lg {
+    max-width: 720px;
+  }
+}
+
+.dialog-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.25rem 1.5rem;
+  border-bottom: 1px solid var(--border-color);
+
+  .dialog-title {
+    margin: 0;
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: var(--text-main);
+  }
+
+  .dialog-close-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    background: transparent;
+    border: none;
+    border-radius: var(--radius-sm);
+    color: var(--text-muted);
+    cursor: pointer;
+    transition: background-color var(--transition-normal);
+
+    &:hover {
+      background-color: var(--bg-muted);
+      color: var(--text-main);
+    }
+  }
+}
+
+.dialog-body {
+  padding: 1.5rem;
+  overflow-y: auto;
+  font-size: 0.95rem;
+  color: var(--text-main);
+}
+
+.dialog-footer {
+  padding: 1rem 1.5rem;
+  border-top: 1px solid var(--border-color);
+  background-color: var(--bg-muted);
+  border-bottom-left-radius: var(--radius-lg);
+  border-bottom-right-radius: var(--radius-lg);
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.75rem;
+
+  &:empty {
+    display: none;
+  }
+}
+
+@keyframes overlayFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes modalScaleUp {
+  from {
+    opacity: 0;
+    transform: scale(0.96) translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}

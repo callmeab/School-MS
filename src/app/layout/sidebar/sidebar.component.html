@@ -1,0 +1,37 @@
+<aside
+  class="app-sidebar"
+  [class.sidebar-open]="layoutStore.isSidebarOpen()"
+  aria-label="Main Navigation"
+>
+  <!-- Sidebar Header (Mobile close button) -->
+  <div class="sidebar-header">
+    <span class="sidebar-title">Menu</span>
+    <button
+      type="button"
+      class="sidebar-close-btn"
+      (click)="layoutStore.closeSidebar()"
+      aria-label="Close navigation menu"
+    >
+      <app-icon name="close" [size]="20" />
+    </button>
+  </div>
+
+  <!-- Navigation Menu List -->
+  <nav class="sidebar-nav">
+    <ul role="list">
+      @for (item of navItems(); track item.label + item.route) {
+        <li>
+          <a
+            [routerLink]="item.route"
+            routerLinkActive="active"
+            (click)="onLinkClick()"
+            class="nav-link"
+          >
+            <app-icon [name]="item.icon" [size]="20" />
+            <span class="nav-label">{{ item.label }}</span>
+          </a>
+        </li>
+      }
+    </ul>
+  </nav>
+</aside>

@@ -1,0 +1,693 @@
+/* ==========================================================================
+   Global Theme & CSS Variables
+   ========================================================================== */
+:root {
+  /* Brand & Theme Colors */
+  --primary-color: #2563eb;
+  --primary-hover: #1d4ed8;
+  --primary-light: #eff6ff;
+  --primary-border: #bfdbfe;
+
+  /* Neutrals & Text */
+  --text-main: #0f172a;
+  --text-muted: #64748b;
+  --text-inverse: #ffffff;
+
+  /* Surfaces & Backgrounds */
+  --bg-body: #f8fafc;
+  --bg-surface: #ffffff;
+  --bg-muted: #f1f5f9;
+
+  /* Borders & Dividers */
+  --border-color: #e2e8f0;
+  --border-focus: #2563eb;
+
+  /* Sidebar Theme */
+  --sidebar-bg: #0f172a;
+  --sidebar-text: #94a3b8;
+  --sidebar-hover-bg: #1e293b;
+  --sidebar-hover-text: #ffffff;
+  --sidebar-active-bg: #2563eb;
+  --sidebar-active-text: #ffffff;
+
+  /* Sizing & Spacing */
+  --navbar-height: 60px;
+  --sidebar-width: 250px;
+  --radius-sm: 6px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+
+  /* Shadows */
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.05);
+
+  /* Transitions */
+  --transition-normal: 0.2s ease;
+}
+
+/* CSS Reset & Defaults */
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+html, body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  color: var(--text-main);
+  background-color: var(--bg-body);
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Visible Keyboard Focus Outline for Accessibility */
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+select:focus-visible {
+  outline: 2px solid var(--border-focus);
+  outline-offset: 2px;
+}
+
+/* Common Reusable Form Controls */
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.form-label {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--text-main);
+}
+
+.form-control,
+.form-select {
+  width: 100%;
+  height: 44px;
+  padding: 0 0.85rem;
+  font-size: 0.95rem;
+  border: 1.5px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  background-color: var(--bg-surface);
+  color: var(--text-main);
+  outline: none;
+  transition: border-color var(--transition-normal);
+
+  &:focus {
+    border-color: var(--border-focus);
+  }
+
+  &.is-invalid {
+    border-color: #ef4444;
+  }
+}
+
+.form-error {
+  font-size: 0.8rem;
+  color: #dc2626;
+  font-weight: 500;
+}
+
+/* Common Reusable Buttons */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  min-height: 42px;
+  padding: 0.5rem 1.25rem;
+  font-size: 0.95rem;
+  font-weight: 600;
+  border-radius: var(--radius-sm);
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: all var(--transition-normal);
+
+  &:disabled {
+    opacity: 0.65;
+    cursor: not-allowed;
+  }
+
+  &.btn-sm {
+    min-height: 36px;
+    padding: 0.35rem 0.75rem;
+    font-size: 0.85rem;
+  }
+}
+
+.btn-primary {
+  background-color: var(--primary-color);
+  color: var(--text-inverse);
+
+  &:hover:not(:disabled) {
+    background-color: var(--primary-hover);
+  }
+}
+
+.btn-secondary {
+  background-color: var(--bg-surface);
+  border-color: var(--border-color);
+  color: var(--text-main);
+
+  &:hover:not(:disabled) {
+    background-color: var(--bg-muted);
+  }
+}
+
+.btn-danger {
+  background-color: #dc2626;
+  color: var(--text-inverse);
+
+  &:hover:not(:disabled) {
+    background-color: #b91c1c;
+  }
+}
+
+.btn-spinner {
+  width: 14px;
+  height: 14px;
+  border: 2px solid rgba(255, 255, 255, 0.4);
+  border-top-color: #ffffff;
+  border-radius: 50%;
+  animation: spin 0.6s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Reusable CRUD Layout & Table Styles */
+.feature-container {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.filter-card {
+  background-color: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  padding: 1rem 1.25rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.table-container {
+  background-color: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  overflow-x: auto;
+  box-shadow: var(--shadow-sm);
+}
+
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+  font-size: 0.95rem;
+
+  th {
+    background-color: var(--bg-muted);
+    padding: 0.875rem 1.25rem;
+    font-weight: 600;
+    color: var(--text-muted);
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    border-bottom: 1px solid var(--border-color);
+  }
+
+  td {
+    padding: 1rem 1.25rem;
+    border-bottom: 1px solid var(--border-color);
+    vertical-align: middle;
+  }
+
+  tr:last-child td {
+    border-bottom: none;
+  }
+
+  tr:hover td {
+    background-color: #f8fafc;
+  }
+}
+
+.text-right {
+  text-align: right;
+}
+
+.actions-group {
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.5rem;
+}
+
+.btn-icon {
+  background: transparent;
+  border: 1px solid var(--border-color);
+  padding: 0.4rem 0.75rem;
+  border-radius: var(--radius-sm);
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-main);
+  cursor: pointer;
+  transition: all var(--transition-normal);
+
+  &:hover {
+    background-color: var(--bg-muted);
+  }
+
+  &.text-danger {
+    color: #dc2626;
+    border-color: #fecaca;
+
+    &:hover {
+      background-color: #fef2f2;
+    }
+  }
+}
+
+.dialog-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.dialog-action-buttons {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+/* Attendance Status Badges & Buttons */
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.25rem 0.65rem;
+  border-radius: 9999px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-transform: capitalize;
+
+  &.badge-present {
+    background-color: #dcfce7;
+    color: #15803d;
+    border: 1px solid #bbf7d0;
+  }
+
+  &.badge-absent {
+    background-color: #fee2e2;
+    color: #b91c1c;
+    border: 1px solid #fecaca;
+  }
+
+  &.badge-late {
+    background-color: #fef3c7;
+    color: #b45309;
+    border: 1px solid #fde68a;
+  }
+
+  &.badge-leave {
+    background-color: #dbeafe;
+    color: #1d4ed8;
+    border: 1px solid #bfdbfe;
+  }
+}
+
+.notice-banner {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  border-radius: var(--radius-md);
+  font-size: 0.9rem;
+  font-weight: 500;
+
+  &.banner-info {
+    background-color: #eff6ff;
+    border: 1px solid #bfdbfe;
+    color: #1e40af;
+  }
+
+  &.banner-warning {
+    background-color: #fffbeb;
+    border: 1px solid #fde68a;
+    color: #92400e;
+  }
+}
+
+/* Reusable Attendance Components Styles */
+.attendance-actions-card {
+  background-color: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  padding: 1rem 1.25rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 1rem;
+  box-shadow: var(--shadow-sm);
+}
+
+.actions-left,
+.actions-right {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.unsaved-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #b45309;
+  background-color: #fef3c7;
+  border: 1px solid #fde68a;
+  padding: 0.35rem 0.65rem;
+  border-radius: 9999px;
+}
+
+.pulse-dot {
+  width: 8px;
+  height: 8px;
+  background-color: #d97706;
+  border-radius: 50%;
+  animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+  0% { transform: scale(0.9); opacity: 1; }
+  50% { transform: scale(1.3); opacity: 0.5; }
+  100% { transform: scale(0.9); opacity: 1; }
+}
+
+.live-summary {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.summary-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.3rem 0.65rem;
+  border-radius: var(--radius-sm);
+  font-size: 0.85rem;
+  font-weight: 600;
+  border: 1px solid transparent;
+
+  .pill-value {
+    font-size: 1rem;
+    font-weight: 700;
+  }
+
+  &.pill-present {
+    background-color: #dcfce7;
+    color: #15803d;
+    border-color: #bbf7d0;
+  }
+
+  &.pill-absent {
+    background-color: #fee2e2;
+    color: #b91c1c;
+    border-color: #fecaca;
+  }
+
+  &.pill-late {
+    background-color: #fef3c7;
+    color: #b45309;
+    border-color: #fde68a;
+  }
+
+  &.pill-leave {
+    background-color: #dbeafe;
+    color: #1d4ed8;
+    border-color: #bfdbfe;
+  }
+}
+
+.status-button-group {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.status-btn {
+  flex: 1;
+  min-height: 44px;
+  padding: 0.5rem 0.75rem;
+  font-size: 0.95rem;
+  font-weight: 600;
+  border-radius: var(--radius-sm);
+  border: 1.5px solid var(--border-color);
+  background-color: var(--bg-surface);
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: all var(--transition-normal);
+
+  &:hover:not(:disabled) {
+    background-color: var(--bg-muted);
+    color: var(--text-main);
+  }
+
+  &:disabled {
+    opacity: 0.65;
+    cursor: not-allowed;
+  }
+
+  &.active.btn-status-present {
+    background-color: #16a34a;
+    border-color: #15803d;
+    color: #ffffff;
+    box-shadow: 0 2px 4px rgba(22, 163, 74, 0.3);
+  }
+
+  &.active.btn-status-absent {
+    background-color: #dc2626;
+    border-color: #b91c1c;
+    color: #ffffff;
+    box-shadow: 0 2px 4px rgba(220, 38, 38, 0.3);
+  }
+
+  &.active.btn-status-late {
+    background-color: #d97706;
+    border-color: #b45309;
+    color: #ffffff;
+    box-shadow: 0 2px 4px rgba(217, 119, 6, 0.3);
+  }
+
+  &.active.btn-status-leave {
+    background-color: #2563eb;
+    border-color: #1d4ed8;
+    color: #ffffff;
+    box-shadow: 0 2px 4px rgba(37, 99, 235, 0.3);
+  }
+}
+
+/* Exam Status Badges */
+.status-badge {
+  &.badge-upcoming {
+    background-color: #dbeafe;
+    color: #1d4ed8;
+    border: 1px solid #bfdbfe;
+  }
+
+  &.badge-ongoing {
+    background-color: #dcfce7;
+    color: #15803d;
+    border: 1px solid #bbf7d0;
+  }
+
+  &.badge-finished {
+    background-color: #f1f5f9;
+    color: #475569;
+    border: 1px solid #cbd5e1;
+  }
+}
+
+/* Print Utilities & Styles */
+.print-only {
+  display: none;
+}
+
+@media print {
+  body {
+    background-color: #ffffff !important;
+    color: #000000 !important;
+    font-size: 11pt;
+  }
+
+  /* Hide app navigation and interactive elements */
+  .no-print,
+  app-navbar,
+  app-sidebar,
+  .btn,
+  .filter-card,
+  .page-header-actions,
+  .actions-group,
+  .actions-left,
+  .actions-right,
+  .attendance-tabs {
+    display: none !important;
+  }
+
+  .print-only {
+    display: block !important;
+  }
+
+  .printable-datesheet {
+    width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+
+    .datesheet-school-header {
+      text-align: center;
+      margin-bottom: 1.5rem;
+      border-bottom: 2px solid #000000;
+      padding-bottom: 1rem;
+
+      h1 {
+        font-size: 18pt;
+        margin: 0 0 0.25rem 0;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+      }
+
+      h2 {
+        font-size: 14pt;
+        margin: 0 0 0.25rem 0;
+        font-weight: 600;
+      }
+
+      p {
+        font-size: 11pt;
+        margin: 0;
+      }
+    }
+
+    .datesheet-meta-grid {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 1rem;
+      font-size: 10.5pt;
+      font-weight: 600;
+    }
+
+    table.datesheet-table {
+      width: 100% !important;
+      border-collapse: collapse !important;
+      margin-top: 0.5rem;
+
+      th, td {
+        border: 1px solid #000000 !important;
+        padding: 8px 10px !important;
+        text-align: left;
+        font-size: 10.5pt;
+      }
+
+      th {
+        background-color: #f2f2f2 !important;
+        font-weight: bold !important;
+        text-transform: uppercase;
+      }
+    }
+
+    .datesheet-footer {
+      margin-top: 2rem;
+      display: flex;
+      justify-content: space-between;
+      font-size: 10pt;
+      padding-top: 2rem;
+
+      .sign-line {
+        border-top: 1px dashed #000000;
+        padding-top: 0.25rem;
+        width: 160px;
+        text-align: center;
+      }
+    }
+  }
+
+  /* Printable Reports (Monthly Attendance, Student History, Faculty Summary) */
+  .printable-report {
+    width: 100% !important;
+    color: #000000 !important;
+    background: #ffffff !important;
+
+    .report-print-header {
+      h1 {
+        font-size: 16pt;
+        margin: 0 0 0.25rem 0;
+        text-align: center;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+      }
+
+      h2 {
+        font-size: 12pt;
+        margin: 0 0 0.75rem 0;
+        text-align: center;
+        border-bottom: 2px solid #000000;
+        padding-bottom: 0.4rem;
+        text-transform: uppercase;
+      }
+    }
+
+    .print-meta-grid {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 0.75rem;
+      font-size: 10pt;
+      font-weight: 500;
+    }
+
+    .print-report-table {
+      width: 100% !important;
+      border-collapse: collapse !important;
+
+      th,
+      td {
+        border: 1px solid #000000 !important;
+        padding: 6px 8px !important;
+        text-align: left;
+        font-size: 9.5pt;
+      }
+
+      th {
+        background-color: #f2f2f2 !important;
+        font-weight: bold !important;
+      }
+
+      tfoot th {
+        background-color: #eaeaea !important;
+      }
+    }
+
+    .print-report-footer {
+      margin-top: 2.5rem;
+      display: flex;
+      justify-content: space-between;
+      font-size: 9.5pt;
+
+      .sign-box {
+        border-top: 1px dashed #000000;
+        width: 170px;
+        padding-top: 0.25rem;
+        text-align: center;
+      }
+    }
+  }
+}

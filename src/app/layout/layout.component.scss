@@ -1,0 +1,17 @@
+.layout-shell {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.layout-container {
+  display: flex;
+  flex: 1;
+}
+
+.layout-content {
+  flex: 1;
+  padding: 1.5rem;
+  background-color: #f8fafc;
+  overflow-y: auto;
+}

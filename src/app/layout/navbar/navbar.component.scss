@@ -1,0 +1,165 @@
+.app-navbar {
+  height: var(--navbar-height);
+  background-color: var(--bg-surface);
+  border-bottom: 1px solid var(--border-color);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 1.25rem;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  box-shadow: var(--shadow-sm);
+}
+
+.navbar-left {
+  display: flex;
+  align-items: center;
+  gap: 0.875rem;
+}
+
+.hamburger-btn {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  background: transparent;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  color: var(--text-main);
+  cursor: pointer;
+  transition: background-color var(--transition-normal);
+
+  &:hover {
+    background-color: var(--bg-muted);
+  }
+}
+
+.brand-link {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  text-decoration: none;
+  color: var(--text-main);
+
+  .school-logo {
+    font-size: 1.5rem;
+  }
+
+  .school-title {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--text-main);
+    letter-spacing: -0.01em;
+  }
+}
+
+.divider-v {
+  display: inline-block;
+  width: 1px;
+  height: 24px;
+  background-color: var(--border-color);
+  margin: 0 0.5rem;
+}
+
+.page-title {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+.navbar-right {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.user-info {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+}
+
+.user-name {
+  font-size: 0.925rem;
+  font-weight: 600;
+  color: var(--text-main);
+}
+
+.role-badge {
+  font-size: 0.725rem;
+  padding: 0.2rem 0.6rem;
+  border-radius: 9999px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.badge-admin {
+  background-color: #fef3c7;
+  color: #92400e;
+}
+
+.badge-teacher {
+  background-color: #dbeafe;
+  color: #1e40af;
+}
+
+.badge-student {
+  background-color: #e0e7ff;
+  color: #3730a3;
+}
+
+.logout-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  min-height: 40px;
+  padding: 0.4rem 0.85rem;
+  background: transparent;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  color: var(--text-muted);
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all var(--transition-normal);
+
+  &:hover {
+    background-color: var(--bg-muted);
+    color: #ef4444;
+    border-color: #fca5a5;
+  }
+}
+
+/* Mobile Responsive Adjustments (<768px) */
+@media (max-width: 767px) {
+  .hamburger-btn {
+    display: inline-flex;
+  }
+
+  .divider-v,
+  .page-title {
+    display: none;
+  }
+
+  .school-title {
+    font-size: 0.95rem;
+  }
+
+  .user-name {
+    display: none;
+  }
+
+  .logout-label {
+    display: none;
+  }
+
+  .logout-btn {
+    padding: 0.4rem 0.6rem;
+    min-height: 44px;
+    min-width: 44px;
+    justify-content: center;
+  }
+}

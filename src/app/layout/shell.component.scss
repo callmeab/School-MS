@@ -1,0 +1,48 @@
+.shell-layout {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  background-color: var(--bg-body);
+}
+
+.shell-body {
+  display: flex;
+  flex: 1;
+  position: relative;
+  min-height: calc(100vh - var(--navbar-height));
+}
+
+.shell-content {
+  flex: 1;
+  padding: 1.5rem;
+  overflow-y: auto;
+  min-width: 0; /* Prevents flex children blowout */
+}
+
+.sidebar-backdrop {
+  display: none;
+}
+
+@media (max-width: 767px) {
+  .shell-content {
+    padding: 1rem;
+  }
+
+  .sidebar-backdrop {
+    display: block;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(15, 23, 42, 0.5);
+    backdrop-filter: blur(2px);
+    z-index: 140;
+    animation: fadeIn var(--transition-normal);
+  }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}

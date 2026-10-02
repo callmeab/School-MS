@@ -1,0 +1,271 @@
+<div class="student-attendance-container">
+  <!-- Top Filters: Class Dropdown and Date Picker -->
+  <div class="filter-card">
+    <div class="filter-controls">
+      <div class="form-group select-group">
+        <label for="classSelect" class="form-label">Select Class</label>
+        <select
+          id="classSelect"
+          class="form-select"
+          [value]="selectedClassId()"
+          (change)="onClassSelect($event)"
+          [disabled]="loadingClasses() || saving()"
+        >
+          <option value="" disabled>-- Choose a Class --</option>
+          @for (c of classes(); track c.id) {
+            <option [value]="c.id">
+              {{ c.name }} - Section {{ c.section }} ({{ c.academic_year }})
+            </option>
+          }
+        </select>
+      </div>
+
+      <div class="form-group date-group">
+        <label for="dateSelect" class="form-label">
+          Attendance Date
+          @if (formattedSelectedDate()) {
+            <span class="date-display-hint">({{ formattedSelectedDate() }})</span>
+          }
+        </label>
+        <input
+          id="dateSelect"
+          type="date"
+          class="form-control"
+          [value]="selectedDate()"
+          [min]="minDate()"
+          [max]="maxDate()"
+          (change)="onDateSelect($event)"
+          [disabled]="loadingClasses() || saving()"
+        />
+      </div>
+    </div>
+  </div>
+
+  <!-- Loading Classes State -->
+  @if (loadingClasses()) {
+    <app-loading-spinner message="Loading classes..."></app-loading-spinner>
+  } @else if (teacherHasNoClasses()) {
+    <!-- Empty State for Teacher with No Assigned Classes -->
+    <app-empty-state
+      icon="classes"
+      title="No Class Assigned"
+      message="No class assigned to you yet. Please ask the admin."
+    ></app-empty-state>
+  } @else if (!selectedClassId()) {
+    <!-- Class Not Selected State -->
+    <app-empty-state
+      icon="classes"
+      title="Select a Class"
+      message="Please select a class above to view and mark student attendance."
+    ></app-empty-state>
+  } @else if (loadingStudents()) {
+    <!-- Loading Students State -->
+    <app-loading-spinner message="Loading students & attendance..."></app-loading-spinner>
+  } @else if (students().length === 0) {
+    <!-- No Active Students State -->
+    <app-empty-state
+      icon="students"
+      title="No Active Students"
+      message="No active students found in this class."
+    ></app-empty-state>
+  } @else {
+    <!-- Attendance Header & Action Bar -->
+    <div class="attendance-actions-card">
+      <div class="actions-left">
+        <button
+          type="button"
+          class="btn btn-secondary btn-mark-all"
+          (click)="markAllPresent()"
+          [disabled]="saving()"
+        >
+          <span class="btn-check-icon">&#10003;</span>
+          Mark All Present
+        </button>
+
+        @if (hasUnsavedChanges()) {
+          <span class="unsaved-badge">
+            <span class="pulse-dot"></span> Unsaved Changes
+          </span>
+        }
+      </div>
+
+      <!-- Live Summary Counters -->
+      <div class="live-summary" aria-label="Attendance live summary">
+        <div class="summary-pill pill-present">
+          <span class="pill-label">Present:</span>
+          <span class="pill-value">{{ summary().present }}</span>
+        </div>
+        <div class="summary-pill pill-absent">
+          <span class="pill-label">Absent:</span>
+          <span class="pill-value">{{ summary().absent }}</span>
+        </div>
+        <div class="summary-pill pill-late">
+          <span class="pill-label">Late:</span>
+          <span class="pill-value">{{ summary().late }}</span>
+        </div>
+        <div class="summary-pill pill-leave">
+          <span class="pill-label">Leave:</span>
+          <span class="pill-value">{{ summary().leave }}</span>
+        </div>
+      </div>
+
+      <!-- Save Button -->
+      <div class="actions-right">
+        <button
+          type="button"
+          class="btn btn-primary btn-save"
+          (click)="save()"
+          [disabled]="saving() || students().length === 0"
+        >
+          @if (saving()) {
+            <span class="btn-spinner"></span>
+            <span>Saving Attendance...</span>
+          } @else {
+            <span>Save Attendance</span>
+          }
+        </button>
+      </div>
+    </div>
+
+    <!-- Alert Note if Attendance Already Recorded -->
+    @if (isExistingAttendance()) {
+      <div class="notice-banner banner-warning" role="alert">
+        <span class="banner-icon">&#9888;</span>
+        <span><strong>Note:</strong> Attendance for this date is already marked. You are currently editing existing records.</span>
+      </div>
+    }
+
+    <!-- Students Table (Desktop View) -->
+    <div class="table-container desktop-view">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th class="col-roll">Roll No</th>
+            <th class="col-name">Student Name</th>
+            <th class="col-status">Attendance Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (s of students(); track s.student_id) {
+            <tr>
+              <td class="col-roll">
+                <span class="roll-badge">{{ s.roll_no }}</span>
+              </td>
+              <td class="col-name">
+                <strong class="student-name">{{ s.full_name }}</strong>
+              </td>
+              <td class="col-status">
+                <div class="status-button-group" role="group" [attr.aria-label]="'Attendance for ' + s.full_name">
+                  <button
+                    type="button"
+                    class="status-btn btn-status-present"
+                    [class.active]="s.status === 'present'"
+                    (click)="setStatus(s.student_id, 'present')"
+                    [disabled]="saving()"
+                  >
+                    Present
+                  </button>
+                  <button
+                    type="button"
+                    class="status-btn btn-status-absent"
+                    [class.active]="s.status === 'absent'"
+                    (click)="setStatus(s.student_id, 'absent')"
+                    [disabled]="saving()"
+                  >
+                    Absent
+                  </button>
+                  <button
+                    type="button"
+                    class="status-btn btn-status-late"
+                    [class.active]="s.status === 'late'"
+                    (click)="setStatus(s.student_id, 'late')"
+                    [disabled]="saving()"
+                  >
+                    Late
+                  </button>
+                  <button
+                    type="button"
+                    class="status-btn btn-status-leave"
+                    [class.active]="s.status === 'leave'"
+                    (click)="setStatus(s.student_id, 'leave')"
+                    [disabled]="saving()"
+                  >
+                    Leave
+                  </button>
+                </div>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Students Mobile Cards View -->
+    <div class="mobile-view student-card-list">
+      @for (s of students(); track s.student_id) {
+        <div class="student-card">
+          <div class="card-header">
+            <span class="roll-badge">Roll #{{ s.roll_no }}</span>
+            <strong class="student-name">{{ s.full_name }}</strong>
+          </div>
+
+          <div class="status-button-group mobile-group" role="group" [attr.aria-label]="'Attendance for ' + s.full_name">
+            <button
+              type="button"
+              class="status-btn btn-status-present"
+              [class.active]="s.status === 'present'"
+              (click)="setStatus(s.student_id, 'present')"
+              [disabled]="saving()"
+            >
+              Present
+            </button>
+            <button
+              type="button"
+              class="status-btn btn-status-absent"
+              [class.active]="s.status === 'absent'"
+              (click)="setStatus(s.student_id, 'absent')"
+              [disabled]="saving()"
+            >
+              Absent
+            </button>
+            <button
+              type="button"
+              class="status-btn btn-status-late"
+              [class.active]="s.status === 'late'"
+              (click)="setStatus(s.student_id, 'late')"
+              [disabled]="saving()"
+            >
+              Late
+            </button>
+            <button
+              type="button"
+              class="status-btn btn-status-leave"
+              [class.active]="s.status === 'leave'"
+              (click)="setStatus(s.student_id, 'leave')"
+              [disabled]="saving()"
+            >
+              Leave
+            </button>
+          </div>
+        </div>
+      }
+    </div>
+
+    <!-- Bottom Save Button for convenient mobile submit -->
+    <div class="bottom-save-bar">
+      <button
+        type="button"
+        class="btn btn-primary btn-save btn-block"
+        (click)="save()"
+        [disabled]="saving() || students().length === 0"
+      >
+        @if (saving()) {
+          <span class="btn-spinner"></span>
+          <span>Saving Attendance...</span>
+        } @else {
+          <span>Save Attendance</span>
+        }
+      </button>
+    </div>
+  }
+</div>

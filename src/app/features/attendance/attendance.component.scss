@@ -1,0 +1,40 @@
+.attendance-page {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.attendance-tabs {
+  display: flex;
+  gap: 0.5rem;
+  border-bottom: 2px solid var(--border-color);
+  padding-bottom: 0;
+  overflow-x: auto;
+}
+
+.tab-link {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.75rem 1.25rem;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-decoration: none;
+  border-bottom: 3px solid transparent;
+  margin-bottom: -2px;
+  white-space: nowrap;
+  transition: all var(--transition-normal);
+
+  &:hover {
+    color: var(--primary-color);
+  }
+
+  &.active {
+    color: var(--primary-color);
+    border-bottom-color: var(--primary-color);
+  }
+}
+
+.attendance-content {
+  margin-top: 0.25rem;
+}

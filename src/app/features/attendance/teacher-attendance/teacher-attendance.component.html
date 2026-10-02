@@ -1,0 +1,235 @@
+<div class="teacher-attendance-container">
+  <!-- Top Filter: Date Picker -->
+  <div class="filter-card">
+    <div class="filter-controls">
+      <div class="form-group date-group">
+        <label for="teacherDateSelect" class="form-label">
+          Attendance Date
+          @if (formattedDate()) {
+            <span class="date-display-hint">({{ formattedDate() }})</span>
+          }
+        </label>
+        <input
+          id="teacherDateSelect"
+          type="date"
+          class="form-control"
+          [value]="date()"
+          [max]="maxDate"
+          (change)="onDateSelect($event)"
+          [disabled]="loading() || saving()"
+        />
+      </div>
+    </div>
+  </div>
+
+  <!-- Loading State -->
+  @if (loading()) {
+    <app-loading-spinner message="Loading teachers & attendance..."></app-loading-spinner>
+  } @else if (teachers().length === 0) {
+    <!-- Empty State -->
+    <app-empty-state
+      icon="teachers"
+      title="No Active Teachers"
+      message="No active teachers found in the system."
+    ></app-empty-state>
+  } @else {
+    <!-- Attendance Action & Summary Bar -->
+    <div class="attendance-actions-card">
+      <div class="actions-left">
+        <button
+          type="button"
+          class="btn btn-secondary btn-mark-all"
+          (click)="markAllPresent()"
+          [disabled]="saving()"
+        >
+          <span class="btn-check-icon">&#10003;</span>
+          Mark All Present
+        </button>
+
+        @if (hasUnsavedChanges()) {
+          <span class="unsaved-badge">
+            <span class="pulse-dot"></span> Unsaved Changes
+          </span>
+        }
+      </div>
+
+      <!-- Live Summary Counters -->
+      <div class="live-summary" aria-label="Teacher attendance summary">
+        <div class="summary-pill pill-present">
+          <span class="pill-label">Present:</span>
+          <span class="pill-value">{{ summary().present }}</span>
+        </div>
+        <div class="summary-pill pill-absent">
+          <span class="pill-label">Absent:</span>
+          <span class="pill-value">{{ summary().absent }}</span>
+        </div>
+        <div class="summary-pill pill-late">
+          <span class="pill-label">Late:</span>
+          <span class="pill-value">{{ summary().late }}</span>
+        </div>
+        <div class="summary-pill pill-leave">
+          <span class="pill-label">Leave:</span>
+          <span class="pill-value">{{ summary().leave }}</span>
+        </div>
+      </div>
+
+      <!-- Save Button -->
+      <div class="actions-right">
+        <button
+          type="button"
+          class="btn btn-primary btn-save"
+          (click)="save()"
+          [disabled]="saving() || teachers().length === 0"
+        >
+          @if (saving()) {
+            <span class="btn-spinner"></span>
+            <span>Saving Attendance...</span>
+          } @else {
+            <span>Save Attendance</span>
+          }
+        </button>
+      </div>
+    </div>
+
+    <!-- Alert Note if Attendance Already Recorded -->
+    @if (isExisting()) {
+      <div class="notice-banner banner-warning" role="alert">
+        <span class="banner-icon">&#9888;</span>
+        <span><strong>Note:</strong> Teacher attendance for this date is already marked. You are currently editing existing records.</span>
+      </div>
+    }
+
+    <!-- Teachers Table (Desktop View) -->
+    <div class="table-container desktop-view">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th class="col-code">Emp Code</th>
+            <th class="col-name">Teacher Name</th>
+            <th class="col-status">Attendance Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (t of teachers(); track t.teacher_id) {
+            <tr>
+              <td class="col-code">
+                <span class="code-badge">{{ t.employee_code }}</span>
+              </td>
+              <td class="col-name">
+                <strong class="teacher-name">{{ t.full_name }}</strong>
+              </td>
+              <td class="col-status">
+                <div class="status-button-group" role="group" [attr.aria-label]="'Attendance for ' + t.full_name">
+                  <button
+                    type="button"
+                    class="status-btn btn-status-present"
+                    [class.active]="t.status === 'present'"
+                    (click)="setStatus(t.teacher_id, 'present')"
+                    [disabled]="saving()"
+                  >
+                    Present
+                  </button>
+                  <button
+                    type="button"
+                    class="status-btn btn-status-absent"
+                    [class.active]="t.status === 'absent'"
+                    (click)="setStatus(t.teacher_id, 'absent')"
+                    [disabled]="saving()"
+                  >
+                    Absent
+                  </button>
+                  <button
+                    type="button"
+                    class="status-btn btn-status-late"
+                    [class.active]="t.status === 'late'"
+                    (click)="setStatus(t.teacher_id, 'late')"
+                    [disabled]="saving()"
+                  >
+                    Late
+                  </button>
+                  <button
+                    type="button"
+                    class="status-btn btn-status-leave"
+                    [class.active]="t.status === 'leave'"
+                    (click)="setStatus(t.teacher_id, 'leave')"
+                    [disabled]="saving()"
+                  >
+                    Leave
+                  </button>
+                </div>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Teachers Mobile Cards View -->
+    <div class="mobile-view teacher-card-list">
+      @for (t of teachers(); track t.teacher_id) {
+        <div class="teacher-card">
+          <div class="card-header">
+            <span class="code-badge">{{ t.employee_code }}</span>
+            <strong class="teacher-name">{{ t.full_name }}</strong>
+          </div>
+
+          <div class="status-button-group mobile-group" role="group" [attr.aria-label]="'Attendance for ' + t.full_name">
+            <button
+              type="button"
+              class="status-btn btn-status-present"
+              [class.active]="t.status === 'present'"
+              (click)="setStatus(t.teacher_id, 'present')"
+              [disabled]="saving()"
+            >
+              Present
+            </button>
+            <button
+              type="button"
+              class="status-btn btn-status-absent"
+              [class.active]="t.status === 'absent'"
+              (click)="setStatus(t.teacher_id, 'absent')"
+              [disabled]="saving()"
+            >
+              Absent
+            </button>
+            <button
+              type="button"
+              class="status-btn btn-status-late"
+              [class.active]="t.status === 'late'"
+              (click)="setStatus(t.teacher_id, 'late')"
+              [disabled]="saving()"
+            >
+              Late
+            </button>
+            <button
+              type="button"
+              class="status-btn btn-status-leave"
+              [class.active]="t.status === 'leave'"
+              (click)="setStatus(t.teacher_id, 'leave')"
+              [disabled]="saving()"
+            >
+              Leave
+            </button>
+          </div>
+        </div>
+      }
+    </div>
+
+    <!-- Bottom Save Bar for Mobile -->
+    <div class="bottom-save-bar">
+      <button
+        type="button"
+        class="btn btn-primary btn-save btn-block"
+        (click)="save()"
+        [disabled]="saving() || teachers().length === 0"
+      >
+        @if (saving()) {
+          <span class="btn-spinner"></span>
+          <span>Saving Attendance...</span>
+        } @else {
+          <span>Save Attendance</span>
+        }
+      </button>
+    </div>
+  }
+</div>

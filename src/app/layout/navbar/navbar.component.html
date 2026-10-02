@@ -1,0 +1,44 @@
+<header class="app-navbar" role="banner">
+  <!-- Left Side: Mobile Menu Button & Brand -->
+  <div class="navbar-left">
+    <button
+      type="button"
+      class="hamburger-btn"
+      (click)="layoutStore.toggleSidebar()"
+      aria-label="Toggle navigation menu"
+      [attr.aria-expanded]="layoutStore.isSidebarOpen()"
+    >
+      <app-icon name="menu" [size]="22" />
+    </button>
+
+    <a routerLink="/dashboard" class="brand-link" aria-label="Go to Dashboard">
+      <span class="school-logo" aria-hidden="true">🏫</span>
+      <span class="school-title">{{ schoolName }}</span>
+    </a>
+
+    <span class="divider-v" aria-hidden="true"></span>
+    <span class="page-title">{{ layoutStore.pageTitle() }}</span>
+  </div>
+
+  <!-- Right Side: User Profile & Logout -->
+  <div class="navbar-right">
+    @if (authService.isAuthenticated()) {
+      <div class="user-info">
+        <span class="user-name">{{ authService.profile()?.full_name }}</span>
+        <span class="role-badge" [class]="'badge-' + authService.role()">
+          {{ authService.role() }}
+        </span>
+      </div>
+
+      <button
+        type="button"
+        class="logout-btn"
+        (click)="onLogout()"
+        aria-label="Sign out of account"
+      >
+        <app-icon name="logout" [size]="18" />
+        <span class="logout-label">Sign Out</span>
+      </button>
+    }
+  </div>
+</header>

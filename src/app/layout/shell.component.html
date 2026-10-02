@@ -1,0 +1,20 @@
+<div class="shell-layout">
+  <app-navbar />
+
+  <div class="shell-body">
+    <!-- Backdrop for mobile drawer -->
+    @if (layoutStore.isSidebarOpen()) {
+      <div
+        class="sidebar-backdrop"
+        (click)="layoutStore.closeSidebar()"
+        aria-hidden="true"
+      ></div>
+    }
+
+    <app-sidebar />
+
+    <main class="shell-content" id="main-content" role="main">
+      <router-outlet />
+    </main>
+  </div>
+</div>

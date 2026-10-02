@@ -1,0 +1,43 @@
+<div class="attendance-page">
+  <app-page-header
+    title="Attendance Management"
+    subtitle="Mark and manage daily attendance for students and staff"
+  ></app-page-header>
+
+  <!-- Navigation Tabs -->
+  <nav class="attendance-tabs" aria-label="Attendance navigation">
+    <a
+      routerLink="/attendance"
+      routerLinkActive="active"
+      [routerLinkActiveOptions]="{ exact: true }"
+      class="tab-link"
+    >
+      Student Attendance
+    </a>
+
+    @if (authService.isAdmin()) {
+      <a
+        routerLink="/attendance/teachers"
+        routerLinkActive="active"
+        class="tab-link"
+      >
+        Teacher Attendance
+      </a>
+    }
+
+    @if (authService.isTeacher()) {
+      <a
+        routerLink="/attendance/my-attendance"
+        routerLinkActive="active"
+        class="tab-link"
+      >
+        My Attendance
+      </a>
+    }
+  </nav>
+
+  <!-- Nested Route Content -->
+  <div class="attendance-content">
+    <router-outlet></router-outlet>
+  </div>
+</div>
